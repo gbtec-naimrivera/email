@@ -30,16 +30,18 @@ public class Email {
     private String emailBody;
 
     @Column(name = "state", nullable = false)
-    private String state;
+    private int state;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "email_to")
-    private List<String> emailTo;
+    // Relación con la entidad EmailTo
+    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmailTo> emailTo;
 
-    @Column(name = "email_cc")
-    private List<String> emailCC;
+    // Relación con la entidad EmailCC
+    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmailCC> emailCC;
 
     @PrePersist
     @PreUpdate

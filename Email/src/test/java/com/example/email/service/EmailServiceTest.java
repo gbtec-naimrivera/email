@@ -1,166 +1,215 @@
 package com.example.email.service;
 
-import com.example.email.entity.Email;
-import com.example.email.entity.EmailDao;
+import com.example.email.entity.*;
 import com.example.email.service.exceptions.InvalidEmailStateException;
 import com.example.email.service.exceptions.ResourceNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
 class EmailServiceTest {
 
-    @InjectMocks
+    @Autowired
     private EmailService emailService;
 
-    @Mock
+    @Autowired
     private EmailDao emailDao;
+    @Autowired
+    private EmailToDao emailToDao;
+    @Autowired
+    private EmailCCDao emailCCDao;
 
-    private Email email;
-    private Email emailToUpdate;
+    List<String> emailToList = Arrays.asList("recipient1@gbtec.com", "recipient2@gbtec.com");
+    List<String> emailCCList = Arrays.asList("cc1@gbtec.com", "cc2@gbtec.com");
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        email = new Email();
-        email.setEmailId(1L);
-        email.setEmailFrom("test@example.com");
-        email.setEmailBody("Test email body");
-        email.setState("BORRADOR");
-        email.setUpdatedAt(LocalDateTime.now());
-        email.setEmailTo(new ArrayList<>(Arrays.asList("dest1@example.com", "dest2@example.com")));
-        email.setEmailCC(new ArrayList<>(Arrays.asList("dest3@example.com")));
+    @Test
+    void testCreateEmail() {
+        Email email = new Email();
+        email.setEmailFrom("test@gbtec.com");
+        email.setEmailBody("This is a test email body");
+        email.setState(4);
 
-        emailToUpdate = new Email();
-        emailToUpdate.setEmailId(1L);
-        emailToUpdate.setEmailFrom("updated@example.com");
-        emailToUpdate.setEmailBody("Updated email body");
-        emailToUpdate.setState("BORRADOR");
-        emailToUpdate.setUpdatedAt(LocalDateTime.now());
+        emailDao.save(email);
+
+        Email createdEmail = emailService.createEmail(
+                email.getEmailFrom(),
+                email.getEmailBody(),
+                email.getState(),
+                emailToList,
+                emailCCList
+        );
+
+        assertNotNull(createdEmail);
+        assertEquals("test@gbtec.com", createdEmail.getEmailFrom());
+        assertEquals("This is a test email body", createdEmail.getEmailBody());
+        assertEquals(4, createdEmail.getState());
+
+        assertNotNull(createdEmail.getEmailTo());
+        assertNotNull(createdEmail.getEmailCC());
+        assertEquals(emailToList.size(), createdEmail.getEmailTo().size());
+        assertEquals(emailCCList.size(), createdEmail.getEmailCC().size());
     }
 
     @Test
-    void saveEmailTest() {
-        when(emailDao.save(any(Email.class))).thenReturn(email);
+    void testGetEmailByIdFound() {
+        Email email = new Email();
+        email.setEmailFrom("test@gbtec.com");
+        email.setEmailBody("This is a test email body");
+        email.setState(4);
 
-        Email savedEmail = emailService.createEmail(email);
-        assertNotNull(savedEmail);
-        assertEquals("test@example.com", savedEmail.getEmailFrom());
-        verify(emailDao, times(1)).save(any(Email.class));
+        emailDao.save(email);
+
+        Email foundEmail = emailService.getEmailById(email.getEmailId());
+
+        assertNotNull(foundEmail);
+        assertEquals(email.getEmailId(), foundEmail.getEmailId());
+        assertEquals("test@gbtec.com", foundEmail.getEmailFrom());
     }
 
     @Test
-    void getEmailByIdTest() {
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email));
-
-        Optional<Email> foundEmail = Optional.ofNullable(emailService.getEmailById(1L));
-        assertTrue(foundEmail.isPresent());
-        assertEquals("test@example.com", foundEmail.get().getEmailFrom());
-    }
-
-    @Test
-    void getEmailByIdNotFoundTest() {
-        when(emailDao.findById(1L)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            emailService.getEmailById(1L);
+    void testGetEmailByIdNotFound() {
+        assertThrows(ResourceNotFoundException.class, () -> {
+            emailService.getEmailById(999L);
         });
-
-        assertEquals("Email con ID 1 no encontrado", exception.getMessage());
     }
 
     @Test
-    void updateEmailTest() {
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email));
-        when(emailDao.save(any(Email.class))).thenReturn(emailToUpdate);
+    void testUpdateEmailSuccessful() {
+        Email email = new Email();
+        email.setEmailFrom("test@gbtec.com");
+        email.setEmailBody("This is a test email body");
+        email.setState(4);
 
-        Email updatedEmail = emailService.updateEmail(1L, emailToUpdate);
-        assertEquals("updated@example.com", updatedEmail.getEmailFrom());
+        emailDao.save(email);
+
+        email.setEmailFrom("updated@gbtec.com");
+        email.setEmailBody("Updated email body");
+
+        Email updatedEmail = emailService.updateEmail(email.getEmailId(), email);
+
+        assertNotNull(updatedEmail);
+        assertEquals("updated@gbtec.com", updatedEmail.getEmailFrom());
         assertEquals("Updated email body", updatedEmail.getEmailBody());
     }
 
     @Test
-    void updateEmailWithInvalidStateTest() {
-        email.setState("ENVIADO");
+    void testUpdateEmailNotInDraft() {
+        Email email = new Email();
+        email.setEmailFrom("test@gbtec.com");
+        email.setEmailBody("This is a test email body");
+        email.setState(3);
 
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email));
+        emailDao.save(email);
 
-        InvalidEmailStateException exception = assertThrows(InvalidEmailStateException.class, () -> {
-            emailService.updateEmail(1L, emailToUpdate);
+        email.setState(3);
+
+        InvalidEmailStateException thrown = assertThrows(InvalidEmailStateException.class, () -> {
+            emailService.updateEmail(email.getEmailId(), email);
         });
-
     }
 
     @Test
-    void updateEmailsTest() {
-        List<Email> emailList = Arrays.asList(email, emailToUpdate);
-        when(emailDao.findById(anyLong())).thenReturn(Optional.of(email));
-        when(emailDao.save(any(Email.class))).thenReturn(emailToUpdate);
-
-        List<Email> updatedEmails = emailService.updateEmails(emailList);
-
-        assertEquals(2, updatedEmails.size());
-        verify(emailDao, times(2)).save(any(Email.class));
-    }
-
-    @Test
-    void deleteEmailsTest() {
-        List<Long> emailIds = Arrays.asList(1L, 2L, 3L);
-        doNothing().when(emailDao).deleteAllById(emailIds);
-
-        emailService.deleteEmails(emailIds);
-        verify(emailDao, times(1)).deleteAllById(emailIds);
-    }
-
-    // Este test es ahora innecesario, ya que no se usa EmailDestinatarios
-    @Test
-    void addEmailToDestinatariosTest() {
-        // Eliminado ya que no es necesario con la nueva estructura
-    }
-
-    @Test
-    void getEmailsByStateTest() {
-        when(emailDao.findByState("BORRADOR")).thenReturn(Arrays.asList(email));
-
-        List<Email> emails = emailService.getEmailsByState("BORRADOR");
-        assertNotNull(emails);
-        assertEquals(1, emails.size());
-        assertEquals("test@example.com", emails.get(0).getEmailFrom());
-    }
-
-    @Test
-    void markEmailsAsSpamTest() {
-        List<Email> emails = new ArrayList<>();
+    void testUpdateEmails() {
         Email email1 = new Email();
-        email1.setEmailFrom("carl@gbtec.es");
-        email1.setState("BORRADOR");
-        email1.setEmailBody("Mensaje de prueba 1");
-        emails.add(email1);
+        email1.setEmailFrom("test1@gbtec.com");
+        email1.setEmailBody("This is email 1");
+        email1.setState(4);
 
         Email email2 = new Email();
-        email2.setEmailFrom("carl@gbtec.es");
-        email2.setState("ENVIADO");
-        email2.setEmailBody("Mensaje de prueba 2");
-        emails.add(email2);
+        email2.setEmailFrom("test2@gbtec.com");
+        email2.setEmailBody("This is email 2");
+        email2.setState(4);
 
-        when(emailDao.findByEmailFrom("carl@gbtec.es")).thenReturn(emails);
+        emailDao.save(email1);
+        emailDao.save(email2);
 
-        emailService.markEmailsAsSpam();
+        Email emailUpdate1 = new Email();
+        emailUpdate1.setEmailFrom("updated1@gbtec.com");
+        emailUpdate1.setEmailBody("Updated email body");
+        emailUpdate1.setState(4);
+        emailDao.save(emailUpdate1);
 
-        for (Email email : emails) {
-            assertEquals("SPAM", email.getState());
-            verify(emailDao, times(1)).save(email);
-        }
+        Email emailUpdate2 = new Email();
+        emailUpdate2.setEmailFrom("updated2@gbtec.com");
+        emailUpdate2.setEmailBody("Updated email body");
+        emailUpdate2.setState(4);
+        emailDao.save(emailUpdate2);
+
+        List<Email> emailsToUpdate = new ArrayList<>();
+        emailsToUpdate.add(emailUpdate1);
+        emailsToUpdate.add(emailUpdate2);
+
+        List<Email> updatedEmails = emailService.updateEmails(emailsToUpdate);
+
+        assertNotNull(updatedEmails);
+        assertEquals(2, updatedEmails.size());
+
+        Email updatedEmail1 = updatedEmails.get(0);
+        assertEquals("updated1@gbtec.com", updatedEmail1.getEmailFrom());
+        assertEquals("Updated email body", updatedEmail1.getEmailBody());
+
+        Email updatedEmail2 = updatedEmails.get(1);
+        assertEquals("updated2@gbtec.com", updatedEmail2.getEmailFrom());
+        assertEquals("Updated email body", updatedEmail2.getEmailBody());
+    }
+
+    @Test
+    void testUpdateEmailsWithInvalidState() {
+        Email email = new Email();
+        email.setEmailFrom("test1@gbtec.com");
+        email.setEmailBody("This is email 1");
+        email.setState(2);
+        emailDao.save(email);
+
+        assertThrows(InvalidEmailStateException.class, () -> {
+            emailService.updateEmails(Arrays.asList(email));
+        });
+    }
+
+    @Test
+    void testDeleteEmailSuccessful() {
+        Email email = new Email();
+        email.setEmailFrom("test@gbtec.com");
+        email.setEmailBody("This is a test email body");
+        email.setState(4);
+
+        emailDao.save(email);
+
+        emailService.deleteEmail(email.getEmailId());
+
+        assertFalse(emailDao.existsById(1L));
+    }
+
+    @Test
+    void testDeleteEmailNotFound() {
+        assertThrows(ResourceNotFoundException.class, () -> {
+            emailService.deleteEmail(999L);
+        });
+    }
+
+    @Test
+    void testGetEmailsByState() {
+        Email email = new Email();
+        email.setEmailFrom("test@gbtec.com");
+        email.setEmailBody("This is a test email body");
+        email.setState(4);
+        emailDao.save(email);
+
+        List<Email> emails = emailService.getEmailsByState(4);
+
+        assertNotNull(emails);
+        assertEquals(1, emails.size());
     }
 }

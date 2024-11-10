@@ -1,9 +1,8 @@
 package com.example.email.rest;
 
 import com.example.email.entity.Email;
-import com.example.email.service.EmailService;
+import com.example.email.service.EmailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +13,10 @@ import java.util.List;
 public class EmailController {
 
     @Autowired
-    private EmailService emailService;
+    private EmailServiceImpl emailService;
 
     // Crear un nuevo email
-    @PostMapping
+    /*@PostMapping
     public ResponseEntity<Email> createEmail(@RequestBody Email email) {
         try {
             Email createdEmail = emailService.createEmail(email);
@@ -25,7 +24,7 @@ public class EmailController {
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
+    }*/
 
     // Obtener todos los emails
     @GetMapping
@@ -72,7 +71,7 @@ public class EmailController {
 
     // Obtener emails por estado
     @GetMapping("/state/{state}")
-    public ResponseEntity<List<Email>> getEmailsByState(@PathVariable String state) {
+    public ResponseEntity<List<Email>> getEmailsByState(@PathVariable int state) {
         List<Email> emails = emailService.getEmailsByState(state);
         return ResponseEntity.ok(emails);
     }
