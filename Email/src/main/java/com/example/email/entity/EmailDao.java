@@ -1,4 +1,4 @@
-package Entity;
+package com.example.email.entity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

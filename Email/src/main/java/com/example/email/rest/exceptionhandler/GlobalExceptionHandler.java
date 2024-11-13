@@ -1,7 +1,7 @@
-package Rest.ExceptionHandler;
+package com.example.email.rest.exceptionhandler;
 
-import Service.Exceptions.InvalidEmailStateException;
-import Service.Exceptions.ResourceNotFoundException;
+import com.example.email.service.exceptions.InvalidEmailStateException;
+import com.example.email.service.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -1,8 +1,9 @@
-package Service;
+package com.example.email.service;
 
-import Entity.Email;
-import Entity.EmailDao;
-import Service.Exceptions.*;
+import com.example.email.entity.Email;
+import com.example.email.entity.EmailDao;
+import com.example.email.service.exceptions.InvalidEmailStateException;
+import com.example.email.service.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

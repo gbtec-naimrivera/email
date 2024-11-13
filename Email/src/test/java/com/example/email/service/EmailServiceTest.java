@@ -1,9 +1,9 @@
-package com.example.Email;
+package com.example.email.service;
 
-import Entity.Email;
-import Entity.EmailDao;
-import Service.EmailService;
-import Service.Exceptions.*;
+import com.example.email.entity.Email;
+import com.example.email.entity.EmailDao;
+import com.example.email.service.exceptions.InvalidEmailStateException;
+import com.example.email.service.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

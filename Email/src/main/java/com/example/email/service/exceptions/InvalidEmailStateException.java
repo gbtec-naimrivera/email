@@ -1,4 +1,4 @@
-package Service.Exceptions;
+package com.example.email.service.exceptions;
 
 public class InvalidEmailStateException extends RuntimeException {
     public InvalidEmailStateException(String message) {

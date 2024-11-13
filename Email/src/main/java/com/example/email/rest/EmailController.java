@@ -1,7 +1,7 @@
-package Rest;
+package com.example.email.rest;
 
-import Entity.Email;
-import Service.EmailService;
+import com.example.email.entity.Email;
+import com.example.email.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/emails")
+@RequestMapping(value = "/emails")
 public class EmailController {
 
     @Autowired
