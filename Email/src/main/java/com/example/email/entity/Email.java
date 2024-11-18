@@ -1,6 +1,8 @@
 package com.example.email.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,15 +34,16 @@ public class Email {
     @Column(name = "state", nullable = false)
     private int state;
 
+    @JsonIgnore
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Relación con la entidad EmailTo
-    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<EmailTo> emailTo;
 
-    // Relación con la entidad EmailCC
-    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<EmailCC> emailCC;
 
     @PrePersist

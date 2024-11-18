@@ -25,6 +25,8 @@ public class EmailServiceImpl implements EmailService{
     @Autowired
     private EmailToDao emailToDao;
 
+
+
     @Override
     public Email createEmail(String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
 
@@ -72,24 +74,59 @@ public class EmailServiceImpl implements EmailService{
     }
 
     @Override
-    public Email updateEmail(Long emailId, Email emailDetails) {
-        Email email = emailDao.findById(emailId).orElseThrow(() ->
-                new ResourceNotFoundException("Email with emailId \" + emailId + \" was not found"));
+    public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
 
+        // Buscar el email existente
+        Email email = emailDao.findById(emailId).orElseThrow(() ->
+                new ResourceNotFoundException("Email with emailId " + emailId + " was not found"));
+
+        // Validar el estado del email
         if (email.getState() != 4) {
             throw new InvalidEmailStateException("Email state is not valid to update");
         }
 
-        email.setEmailFrom(emailDetails.getEmailFrom());
-        email.setEmailBody(emailDetails.getEmailBody());
+        // Crear nuevas listas de EmailTo y EmailCC sin eliminarlas
+        Email finalEmail = email;
 
-        email.setEmailTo(emailDetails.getEmailTo());
-        email.setEmailCC(emailDetails.getEmailCC());
+        List<EmailTo> emailTos = emailToAddresses.stream()
+                .map(address -> {
+                    EmailTo emailTo = new EmailTo();
+                    emailTo.setEmail(finalEmail); // Establecer la relación bidireccional con el Email
+                    emailTo.setEmailAddress(address);
+                    return emailTo;
+                })
+                .collect(Collectors.toList());
 
+        Email finalEmail1 = email;
+        List<EmailCC> emailCCs = emailCCAddresses.stream()
+                .map(address -> EmailCC.builder()
+                        .email(finalEmail1)  // Establecer la relación bidireccional con el Email
+                        .emailAddress(address)
+                        .build())
+                .collect(Collectors.toList());
+
+        // Reemplazar las colecciones de EmailTo y EmailCC con las nuevas listas
+        email.setEmailTo(emailTos); // Reemplazar la lista actual de EmailTo
+        email.setEmailCC(emailCCs); // Reemplazar la lista actual de EmailCC
+
+        // Actualizar los valores del email
+        email.setEmailFrom(emailFrom);
+        email.setEmailBody(emailBody);
+        email.setState(state);
         email.setUpdatedAt(LocalDateTime.now());
 
-        return emailDao.save(email);
+        // Guardar el email actualizado
+        email = emailDao.save(email); // Esto también persistirá las nuevas listas de EmailTo y EmailCC
+
+        // Es importante asegurarse de que las entidades de EmailTo y EmailCC se persisten correctamente.
+        // Si se hace una operación saveAll, debería gestionarse la persistencia sin errores.
+        emailToDao.saveAll(emailTos);
+        emailCCDao.saveAll(emailCCs);
+
+        return email;
     }
+
+
 
     @Override
     public List<Email> updateEmails(List<Email> emailsToUpdate) {

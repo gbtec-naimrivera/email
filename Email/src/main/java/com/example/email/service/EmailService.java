@@ -10,7 +10,7 @@ public interface EmailService{
 
     Email getEmailById(Long emailId);
 
-    Email updateEmail(Long emailId, Email emailDetails);
+    Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses);
 
     List<Email> updateEmails(List<Email> emailsToUpdate);
 
@@ -21,5 +21,6 @@ public interface EmailService{
     void deleteEmails(List<Long> emailIds);
 
     List<Email> getEmailsByState(int state);
+
     void markEmailsAsSpam();
 }

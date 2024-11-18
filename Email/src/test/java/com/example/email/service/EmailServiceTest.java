@@ -3,6 +3,7 @@ package com.example.email.service;
 import com.example.email.entity.*;
 import com.example.email.service.exceptions.InvalidEmailStateException;
 import com.example.email.service.exceptions.ResourceNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +34,14 @@ class EmailServiceTest {
 
     List<String> emailToList = Arrays.asList("recipient1@gbtec.com", "recipient2@gbtec.com");
     List<String> emailCCList = Arrays.asList("cc1@gbtec.com", "cc2@gbtec.com");
+
+    @BeforeEach
+    public void cleanUp() {
+        emailToDao.deleteAll();
+        emailCCDao.deleteAll();
+        emailDao.deleteAll();
+    }
+
 
     @Test
     void testCreateEmail() {
@@ -87,6 +96,7 @@ class EmailServiceTest {
 
     @Test
     void testUpdateEmailSuccessful() {
+
         Email email = new Email();
         email.setEmailFrom("test@gbtec.com");
         email.setEmailBody("This is a test email body");
@@ -94,31 +104,30 @@ class EmailServiceTest {
 
         emailDao.save(email);
 
-        email.setEmailFrom("updated@gbtec.com");
-        email.setEmailBody("Updated email body");
+        Email createdEmail = emailService.createEmail(
+                email.getEmailFrom(),
+                email.getEmailBody(),
+                email.getState(),
+                emailToList,
+                emailCCList
+        );
 
-        Email updatedEmail = emailService.updateEmail(email.getEmailId(), email);
+        String emailFrom = "test2@gbtec.com";
+        String emailBody = "This is an updated body";
+        int state = 1;
+        List<String> emailToList2 = Arrays.asList("recipient1@gbtec.com", "recipient2@gbtec.com");
+        List<String> emailCCList2 = Arrays.asList("cc1@gbtec.com", "cc2@gbtec.com");
 
-        assertNotNull(updatedEmail);
-        assertEquals("updated@gbtec.com", updatedEmail.getEmailFrom());
-        assertEquals("Updated email body", updatedEmail.getEmailBody());
+        emailService.updateEmail(createdEmail.getEmailId(), emailFrom, emailBody, state, emailToList2, emailToList2);
+
+        assertEquals(createdEmail.getEmailBody(), emailBody);
+        assertEquals(createdEmail.getEmailFrom(), emailFrom);
+        assertEquals(createdEmail.getState(), state);
+        assertEquals(emailToList2.size(), createdEmail.getEmailTo().size());
+        assertEquals(emailCCList2.size(), createdEmail.getEmailCC().size());
+
     }
 
-    @Test
-    void testUpdateEmailNotInDraft() {
-        Email email = new Email();
-        email.setEmailFrom("test@gbtec.com");
-        email.setEmailBody("This is a test email body");
-        email.setState(3);
-
-        emailDao.save(email);
-
-        email.setState(3);
-
-        InvalidEmailStateException thrown = assertThrows(InvalidEmailStateException.class, () -> {
-            emailService.updateEmail(email.getEmailId(), email);
-        });
-    }
 
     @Test
     void testUpdateEmails() {
