@@ -103,40 +103,49 @@ public class EmailServiceImpl{
             throw new InvalidEmailStateException("Email state is not valid to update");
         }
 
-        Email finalEmail = email;
+        List<EmailTo> existingTos = email.getEmailTo();
+        for (int i = 0; i < emailToAddresses.size(); i++) {
+            if (i < existingTos.size()) {
+                existingTos.get(i).setEmailAddress(emailToAddresses.get(i));
+            } else {
+                EmailTo newTo = new EmailTo();
+                newTo.setEmail(email);
+                newTo.setEmailAddress(emailToAddresses.get(i));
+                existingTos.add(newTo);
+            }
+        }
 
-        List<EmailTo> emailTos = emailToAddresses.stream()
-                .map(address -> {
-                    EmailTo emailTo = new EmailTo();
-                    emailTo.setEmail(finalEmail);
-                    emailTo.setEmailAddress(address);
-                    return emailTo;
-                })
-                .collect(Collectors.toList());
+        if (existingTos.size() > emailToAddresses.size()) {
+            List<EmailTo> toRemove = existingTos.subList(emailToAddresses.size(), existingTos.size());
+            emailToDao.deleteAll(toRemove);
+            existingTos.removeAll(toRemove);
+        }
 
-        Email finalEmail1 = email;
-        List<EmailCC> emailCCs = emailCCAddresses.stream()
-                .map(address -> EmailCC.builder()
-                        .email(finalEmail1)
-                        .emailAddress(address)
-                        .build())
-                .collect(Collectors.toList());
-
-        email.setEmailTo(emailTos);
-        email.setEmailCC(emailCCs);
+        List<EmailCC> existingCCs = email.getEmailCC();
+        for (int i = 0; i < emailCCAddresses.size(); i++) {
+            if (i < existingCCs.size()) {
+                existingCCs.get(i).setEmailAddress(emailCCAddresses.get(i));
+            } else {
+                EmailCC newCC = new EmailCC();
+                newCC.setEmail(email);
+                newCC.setEmailAddress(emailCCAddresses.get(i));
+                existingCCs.add(newCC);
+            }
+        }
+        if (existingCCs.size() > emailCCAddresses.size()) {
+            List<EmailCC> ccToRemove = existingCCs.subList(emailCCAddresses.size(), existingCCs.size());
+            emailCCDao.deleteAll(ccToRemove);
+            existingCCs.removeAll(ccToRemove);
+        }
 
         email.setEmailFrom(emailFrom);
         email.setEmailBody(emailBody);
         email.setState(state);
         email.setUpdatedAt(LocalDateTime.now());
 
-        email = emailDao.save(email);
-
-        emailToDao.saveAll(emailTos);
-        emailCCDao.saveAll(emailCCs);
-
-        return email;
+        return emailDao.save(email);
     }
+
 
     /**
      *
