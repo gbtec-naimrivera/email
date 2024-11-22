@@ -154,23 +154,39 @@ public class EmailServiceImpl{
      */
     public List<Email> updateEmails(List<Email> emailsToUpdate) {
         List<Email> updatedEmails = new ArrayList<>();
+
         for (Email emailDetails : emailsToUpdate) {
-            Email email = emailDao.findById(emailDetails.getEmailId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Email with emailId " + emailDetails.getEmailId() +
-                            " was not found"));
-            if (email.getState() == 4) {
-                email.setEmailFrom(emailDetails.getEmailFrom());
-                email.setEmailBody(emailDetails.getEmailBody());
-                email.setEmailTo(emailDetails.getEmailTo());
-                email.setEmailCC(emailDetails.getEmailCC());
-                email.setUpdatedAt(LocalDateTime.now());
-                updatedEmails.add(emailDao.save(email));
-            }else{
-                throw new InvalidEmailStateException("Email state is not valid to update");
+
+            List<String> emailToAddresses = emailDetails.getEmailTo().stream()
+                    .map(EmailTo::getEmailAddress)
+                    .collect(Collectors.toList());
+
+            List<String> emailCCAddresses = emailDetails.getEmailCC().stream()
+                    .map(EmailCC::getEmailAddress)
+                    .collect(Collectors.toList());
+
+            try {
+
+                Email updatedEmail = updateEmail(
+                        emailDetails.getEmailId(),
+                        emailDetails.getEmailFrom(),
+                        emailDetails.getEmailBody(),
+                        emailDetails.getState(),
+                        emailToAddresses,
+                        emailCCAddresses
+                );
+                updatedEmails.add(updatedEmail);
+            } catch (ResourceNotFoundException e) {
+                throw new ResourceNotFoundException("Email with emailId " + emailDetails.getEmailId() + " was not found");
+            } catch (InvalidEmailStateException e) {
+                throw new InvalidEmailStateException("Email state is not valid to update for emailId " + emailDetails.getEmailId());
             }
         }
+
         return updatedEmails;
     }
+
+
 
     /**
      *

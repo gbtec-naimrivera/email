@@ -81,6 +81,7 @@ public class EmailController {
 ¡     */
     @PutMapping("/batch")
     public ResponseEntity<List<Email>> updateEmails(@RequestBody List<Email> emailsToUpdate) {
+        System.out.println("ejecutando");
         List<Email> updatedEmails = emailFacade.updateEmails(emailsToUpdate);
         return ResponseEntity.ok(updatedEmails);
     }
