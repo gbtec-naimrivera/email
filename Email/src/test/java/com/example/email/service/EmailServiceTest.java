@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class EmailServiceTest {
 
     @Autowired
-    private EmailService emailService;
+    private EmailServiceImpl emailService;
 
     @Autowired
     private EmailDao emailDao;

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class EmailServiceImpl implements EmailService{
+public class EmailServiceImpl{
 
     @Autowired
     private EmailDao emailDao;
@@ -25,9 +25,15 @@ public class EmailServiceImpl implements EmailService{
     @Autowired
     private EmailToDao emailToDao;
 
-
-
-    @Override
+    /**
+     *
+     * @param emailFrom
+     * @param emailBody
+     * @param state
+     * @param emailToAddresses
+     * @param emailCCAddresses
+     * @return
+     */
     public Email createEmail(String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
 
         Email email = new Email();
@@ -61,7 +67,12 @@ public class EmailServiceImpl implements EmailService{
 
         return email;
     }
-    @Override
+
+    /**
+     *
+     * @param emailId
+     * @return
+     */
     public Email getEmailById(Long emailId) {
 
         Optional<Email> email = emailDao.findById(emailId);
@@ -73,25 +84,31 @@ public class EmailServiceImpl implements EmailService{
         return email.get();
     }
 
-    @Override
+    /**
+     *
+     * @param emailId
+     * @param emailFrom
+     * @param emailBody
+     * @param state
+     * @param emailToAddresses
+     * @param emailCCAddresses
+     * @return
+     */
     public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
 
-        // Buscar el email existente
         Email email = emailDao.findById(emailId).orElseThrow(() ->
                 new ResourceNotFoundException("Email with emailId " + emailId + " was not found"));
 
-        // Validar el estado del email
         if (email.getState() != 4) {
             throw new InvalidEmailStateException("Email state is not valid to update");
         }
 
-        // Crear nuevas listas de EmailTo y EmailCC sin eliminarlas
         Email finalEmail = email;
 
         List<EmailTo> emailTos = emailToAddresses.stream()
                 .map(address -> {
                     EmailTo emailTo = new EmailTo();
-                    emailTo.setEmail(finalEmail); // Establecer la relación bidireccional con el Email
+                    emailTo.setEmail(finalEmail);
                     emailTo.setEmailAddress(address);
                     return emailTo;
                 })
@@ -100,35 +117,32 @@ public class EmailServiceImpl implements EmailService{
         Email finalEmail1 = email;
         List<EmailCC> emailCCs = emailCCAddresses.stream()
                 .map(address -> EmailCC.builder()
-                        .email(finalEmail1)  // Establecer la relación bidireccional con el Email
+                        .email(finalEmail1)
                         .emailAddress(address)
                         .build())
                 .collect(Collectors.toList());
 
-        // Reemplazar las colecciones de EmailTo y EmailCC con las nuevas listas
-        email.setEmailTo(emailTos); // Reemplazar la lista actual de EmailTo
-        email.setEmailCC(emailCCs); // Reemplazar la lista actual de EmailCC
+        email.setEmailTo(emailTos);
+        email.setEmailCC(emailCCs);
 
-        // Actualizar los valores del email
         email.setEmailFrom(emailFrom);
         email.setEmailBody(emailBody);
         email.setState(state);
         email.setUpdatedAt(LocalDateTime.now());
 
-        // Guardar el email actualizado
-        email = emailDao.save(email); // Esto también persistirá las nuevas listas de EmailTo y EmailCC
+        email = emailDao.save(email);
 
-        // Es importante asegurarse de que las entidades de EmailTo y EmailCC se persisten correctamente.
-        // Si se hace una operación saveAll, debería gestionarse la persistencia sin errores.
         emailToDao.saveAll(emailTos);
         emailCCDao.saveAll(emailCCs);
 
         return email;
     }
 
-
-
-    @Override
+    /**
+     *
+     * @param emailsToUpdate
+     * @return
+     */
     public List<Email> updateEmails(List<Email> emailsToUpdate) {
         List<Email> updatedEmails = new ArrayList<>();
         for (Email emailDetails : emailsToUpdate) {
@@ -149,12 +163,18 @@ public class EmailServiceImpl implements EmailService{
         return updatedEmails;
     }
 
-    @Override
+    /**
+     *
+     * @return
+     */
     public List<Email> getAllEmails() {
         return emailDao.findAll();
     }
 
-    @Override
+    /**
+     *
+     * @param emailId
+     */
     public void deleteEmail(Long emailId) {
         Email email = emailDao.findById(emailId)
                 .orElseThrow(() -> new ResourceNotFoundException("Can not delete because it does not exist an email with emailId" +
@@ -163,17 +183,23 @@ public class EmailServiceImpl implements EmailService{
         emailDao.delete(email);
     }
 
-    @Override
+    /**
+     *
+     * @param emailIds
+     */
     public void deleteEmails(List<Long> emailIds) {
         emailDao.deleteAllById(emailIds);
     }
 
-    @Override
+    /**
+     *
+     * @param state
+     * @return
+     */
     public List<Email> getEmailsByState(int state) {
         return emailDao.findByState(state);
     }
 
-    @Override
     @Scheduled(cron = "0 0 10 * * ?") // 10:00 AM
     public void markEmailsAsSpam() {
         List<Email> emails = emailDao.findByEmailFrom("carl@gbtec.es");
