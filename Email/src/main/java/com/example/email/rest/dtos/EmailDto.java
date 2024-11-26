@@ -1,4 +1,4 @@
-package com.example.email.rest;
+package com.example.email.rest.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

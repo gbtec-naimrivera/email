@@ -1,6 +1,9 @@
 package com.example.email.service;
 
 import com.example.email.entity.*;
+import com.example.email.repositories.EmailCCDao;
+import com.example.email.repositories.EmailDao;
+import com.example.email.repositories.EmailToDao;
 import com.example.email.service.exceptions.InvalidEmailStateException;
 import com.example.email.service.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
@@ -34,8 +37,7 @@ public class EmailServiceImpl{
      * @param emailCCAddresses
      * @return
      */
-    public Email createEmail(String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
-
+    public Email createEmail(String emailFrom, String emailBody, int state, List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
         Email email = new Email();
         email.setEmailFrom(emailFrom);
         email.setEmailBody(emailBody);
@@ -48,18 +50,20 @@ public class EmailServiceImpl{
                 .map(address -> {
                     EmailTo emailTo = new EmailTo();
                     emailTo.setEmail(finalEmail);
-                    emailTo.setEmailAddress(address);
+                    emailTo.setEmailAddress(address.getEmailAddress());
                     return emailTo;
                 })
                 .collect(Collectors.toList());
+
         emailToDao.saveAll(emailTos);
 
         List<EmailCC> emailCCs = emailCCAddresses.stream()
                 .map(address -> EmailCC.builder()
                         .email(finalEmail)
-                        .emailAddress(address)
+                        .emailAddress(address.getEmailAddress())
                         .build())
                 .collect(Collectors.toList());
+
         emailCCDao.saveAll(emailCCs);
 
         email.setEmailTo(emailTos);
@@ -67,6 +71,50 @@ public class EmailServiceImpl{
 
         return email;
     }
+
+    public List<Email> createEmails(List<Email> emailsToCreate) {
+        List<Email> createdEmails = new ArrayList<>();
+
+        for (Email emailDetails : emailsToCreate) {
+
+            Email email = new Email();
+            email.setEmailFrom(emailDetails.getEmailFrom());
+            email.setEmailBody(emailDetails.getEmailBody());
+            email.setState(emailDetails.getState());
+            email = emailDao.save(email);
+
+            Email finalEmail = email;
+            List<EmailTo> emailTos = emailDetails.getEmailTo().stream()
+                    .map(address -> {
+                        EmailTo emailTo = new EmailTo();
+                        emailTo.setEmail(finalEmail);
+                        emailTo.setEmailAddress(address.getEmailAddress());
+                        return emailTo;
+                    })
+                    .collect(Collectors.toList());
+
+            emailToDao.saveAll(emailTos);
+
+            Email finalEmail1 = email;
+            List<EmailCC> emailCCs = emailDetails.getEmailCC().stream()
+                    .map(address -> EmailCC.builder()
+                            .email(finalEmail1)
+                            .emailAddress(address.getEmailAddress())
+                            .build())
+                    .collect(Collectors.toList());
+
+            emailCCDao.saveAll(emailCCs);
+
+            email.setEmailTo(emailTos);
+            email.setEmailCC(emailCCs);
+
+            createdEmails.add(email);
+        }
+
+        return createdEmails;
+    }
+
+
 
     /**
      *
@@ -94,54 +142,54 @@ public class EmailServiceImpl{
      * @param emailCCAddresses
      * @return
      */
-    public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
-
+    public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
         Email email = emailDao.findById(emailId).orElseThrow(() ->
                 new ResourceNotFoundException("Email with emailId " + emailId + " was not found"));
 
-        if (email.getState() != 4) {
+        if (email.getState() != 2) {
             throw new InvalidEmailStateException("Email state is not valid to update");
-        }
-
-        List<EmailTo> existingTos = email.getEmailTo();
-        for (int i = 0; i < emailToAddresses.size(); i++) {
-            if (i < existingTos.size()) {
-                existingTos.get(i).setEmailAddress(emailToAddresses.get(i));
-            } else {
-                EmailTo newTo = new EmailTo();
-                newTo.setEmail(email);
-                newTo.setEmailAddress(emailToAddresses.get(i));
-                existingTos.add(newTo);
-            }
-        }
-
-        if (existingTos.size() > emailToAddresses.size()) {
-            List<EmailTo> toRemove = existingTos.subList(emailToAddresses.size(), existingTos.size());
-            emailToDao.deleteAll(toRemove);
-            existingTos.removeAll(toRemove);
-        }
-
-        List<EmailCC> existingCCs = email.getEmailCC();
-        for (int i = 0; i < emailCCAddresses.size(); i++) {
-            if (i < existingCCs.size()) {
-                existingCCs.get(i).setEmailAddress(emailCCAddresses.get(i));
-            } else {
-                EmailCC newCC = new EmailCC();
-                newCC.setEmail(email);
-                newCC.setEmailAddress(emailCCAddresses.get(i));
-                existingCCs.add(newCC);
-            }
-        }
-        if (existingCCs.size() > emailCCAddresses.size()) {
-            List<EmailCC> ccToRemove = existingCCs.subList(emailCCAddresses.size(), existingCCs.size());
-            emailCCDao.deleteAll(ccToRemove);
-            existingCCs.removeAll(ccToRemove);
         }
 
         email.setEmailFrom(emailFrom);
         email.setEmailBody(emailBody);
         email.setState(state);
-        email.setUpdatedAt(LocalDateTime.now());
+
+        List<EmailTo> existingTos = email.getEmailTo();
+        if (existingTos == null) {
+            existingTos = new ArrayList<>();
+        }
+
+        for (int i = 0; i < emailToAddresses.size(); i++) {
+            if (i < existingTos.size()) {
+                existingTos.get(i).setEmailAddress(emailToAddresses.get(i).getEmailAddress());
+            } else {
+                EmailTo newTo = emailToAddresses.get(i);
+                newTo.setEmail(email);
+                existingTos.add(newTo);
+            }
+        }
+
+        emailToDao.saveAll(existingTos);
+
+        List<EmailCC> existingCCs = email.getEmailCC();
+        if (existingCCs == null) {
+            existingCCs = new ArrayList<>();
+        }
+
+        for (int i = 0; i < emailCCAddresses.size(); i++) {
+            if (i < existingCCs.size()) {
+                existingCCs.get(i).setEmailAddress(emailCCAddresses.get(i).getEmailAddress());
+            } else {
+                EmailCC newCC = emailCCAddresses.get(i);
+                newCC.setEmail(email);
+                existingCCs.add(newCC);
+            }
+        }
+
+        emailCCDao.saveAll(existingCCs);
+
+        email.setEmailTo(existingTos);
+        email.setEmailCC(existingCCs);
 
         return emailDao.save(email);
     }
@@ -156,15 +204,6 @@ public class EmailServiceImpl{
         List<Email> updatedEmails = new ArrayList<>();
 
         for (Email emailDetails : emailsToUpdate) {
-
-            List<String> emailToAddresses = emailDetails.getEmailTo().stream()
-                    .map(EmailTo::getEmailAddress)
-                    .collect(Collectors.toList());
-
-            List<String> emailCCAddresses = emailDetails.getEmailCC().stream()
-                    .map(EmailCC::getEmailAddress)
-                    .collect(Collectors.toList());
-
             try {
 
                 Email updatedEmail = updateEmail(
@@ -172,8 +211,8 @@ public class EmailServiceImpl{
                         emailDetails.getEmailFrom(),
                         emailDetails.getEmailBody(),
                         emailDetails.getState(),
-                        emailToAddresses,
-                        emailCCAddresses
+                        emailDetails.getEmailTo(),
+                        emailDetails.getEmailCC()
                 );
                 updatedEmails.add(updatedEmail);
             } catch (ResourceNotFoundException e) {
@@ -188,10 +227,12 @@ public class EmailServiceImpl{
 
 
 
+
     /**
      *
      * @return
      */
+    @Transactional
     public List<Email> getAllEmails() {
         return emailDao.findAll();
     }
@@ -201,11 +242,11 @@ public class EmailServiceImpl{
      * @param emailId
      */
     public void deleteEmail(Long emailId) {
-        Email email = emailDao.findById(emailId)
-                .orElseThrow(() -> new ResourceNotFoundException("Can not delete because it does not exist an email with emailId" +
-                        " :" + " " + emailId));
-
-        emailDao.delete(email);
+        Optional<Email> emailOptional = emailDao.findById(emailId);
+        if (emailOptional.isPresent()) {
+            Email email = emailOptional.get();
+            emailDao.delete(email);
+        }
     }
 
     /**
@@ -229,9 +270,9 @@ public class EmailServiceImpl{
     public void markEmailsAsSpam() {
         List<Email> emails = emailDao.findByEmailFrom("carl@gbtec.es");
         for (Email email : emails) {
-            email.setState(3);
+            email.setState(4);
             email.setUpdatedAt(LocalDateTime.now());
-            emailDao.save(email);
         }
+        emailDao.saveAll(emails);
     }
 }

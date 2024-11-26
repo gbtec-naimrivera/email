@@ -1,9 +1,7 @@
-package com.example.email.entity;
+package com.example.email.repositories;
 
+import com.example.email.entity.EmailTo;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 public interface EmailToDao extends JpaRepository<EmailTo, Long> {
 }

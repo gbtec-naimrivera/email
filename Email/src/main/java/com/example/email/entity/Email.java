@@ -38,11 +38,11 @@ public class Email {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<EmailTo> emailTo;
 
-    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "email", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<EmailCC> emailCC;
 

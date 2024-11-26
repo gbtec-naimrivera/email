@@ -1,0 +1,133 @@
+{
+	"info": {
+		"_postman_id": "d1f95f39-88a3-44a7-af7a-962025336499",
+		"name": "Email",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "39476016"
+	},
+	"item": [
+		{
+			"name": "Crear Email",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"emailFrom\": \"test@example.com\",\r\n  \"emailBody\": \"Este es el cuerpo del email.\",\r\n  \"state\": \"BORRADOR\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails"
+			},
+			"response": []
+		},
+		{
+			"name": "Crear Emails",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"emailFrom\": \"sender1@example.com\",\r\n        \"emailBody\": \"Body of email 1\",\r\n        \"state\": 1,\r\n        \"emailTo\": [\r\n            {\"emailAddress\": \"recipient1@example.com\"},\r\n            {\"emailAddress\": \"recipient2@example.com\"}\r\n        ],\r\n        \"emailCC\": [\r\n            {\"emailAddress\": \"cc1@example.com\"},\r\n            {\"emailAddress\": \"cc2@example.com\"}\r\n        ]\r\n    },\r\n    {\r\n        \"emailFrom\": \"sender2@example.com\",\r\n        \"emailBody\": \"Body of email 2\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\"emailAddress\": \"recipient3@example.com\"},\r\n            {\"emailAddress\": \"recipient4@example.com\"}\r\n        ],\r\n        \"emailCC\": [\r\n            {\"emailAddress\": \"cc3@example.com\"},\r\n            {\"emailAddress\": \"cc4@example.com\"}\r\n        ]\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails/batch"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Email",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Emails State",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get ALL Emails",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Email with Id",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8080/emails/3"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete x emails",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[1, 2] ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails/batch"
+			},
+			"response": []
+		},
+		{
+			"name": "Actualizar Email",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"emailFrom\": \"newemail@example.com\",\r\n    \"emailBody\": \"Este es el contenido actualizado del correo.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails/1"
+			},
+			"response": []
+		},
+		{
+			"name": "Actualizar Emails",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"emailId\": 5,\r\n        \"emailFrom\": \"updated1@example.com\",\r\n        \"emailBody\": \"Actualizado email con id 5\",\r\n        \"state\": \"BORRADOR\"\r\n    },\r\n    {\r\n        \"emailId\": 6,\r\n        \"emailFrom\": \"updated2@example.com\",\r\n        \"emailBody\": \"Actualizado email con id 6\",\r\n        \"state\": \"BORRADOR\"\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails/batch"
+			},
+			"response": []
+		}
+	]
+}

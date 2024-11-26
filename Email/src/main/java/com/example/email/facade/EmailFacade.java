@@ -1,6 +1,8 @@
 package com.example.email.facade;
 
 import com.example.email.entity.Email;
+import com.example.email.entity.EmailCC;
+import com.example.email.entity.EmailTo;
 import com.example.email.service.EmailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +27,17 @@ public class EmailFacade {
      * @param emailCCAddresses  List of CC addresses.
      * @return Created Email.
      */
-    public Email createEmail(String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
+    public Email createEmail(String emailFrom, String emailBody, int state, List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
         return emailService.createEmail(emailFrom, emailBody, state, emailToAddresses, emailCCAddresses);
+    }
+
+    /**
+     *
+     * @param emailsToCreate
+     * @return
+     */
+    public List<Email> createEmails(List<Email> emailsToCreate){
+        return emailService.createEmails(emailsToCreate);
     }
 
     /**
@@ -50,9 +61,10 @@ public class EmailFacade {
      * @param emailCCAddresses  List of CC addresses.
      * @return Updated Email.
      */
-    public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<String> emailToAddresses, List<String> emailCCAddresses) {
+    public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
         return emailService.updateEmail(emailId, emailFrom, emailBody, state, emailToAddresses, emailCCAddresses);
     }
+
 
     /**
      * Updates multiple emails.
