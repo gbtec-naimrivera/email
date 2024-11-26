@@ -160,7 +160,7 @@ public class EmailServiceImpl {
         Email email = emailDao.findById(emailId).orElseThrow(() ->
                 new ResourceNotFoundException("Email with emailId " + emailId + " was not found"));
 
-        if (email.getState() != 2) {  // State 2 = Draft
+        if (email.getState() != EmailStateEnum.DRAFT.getStateCode()) {  // State 2 = Draft
             throw new InvalidEmailStateException("Email state is not valid to update");
         }
 
@@ -288,7 +288,7 @@ public class EmailServiceImpl {
     public void markEmailsAsSpam() {
         List<Email> emails = emailDao.findByEmailFrom("carl@gbtec.es");
         for (Email email : emails) {
-            email.setState(4);  // Set state to 4 (Spam)
+            email.setState(EmailStateEnum.SPAM.getStateCode());
             email.setUpdatedAt(LocalDateTime.now());
         }
         emailDao.saveAll(emails);

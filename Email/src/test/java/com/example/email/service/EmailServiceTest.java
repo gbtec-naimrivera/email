@@ -53,7 +53,7 @@ class EmailServiceTest {
     void testCreateEmail() {
         String emailFrom = "test@gbtec.com";
         String emailBody = "This is a test email body";
-        int state = 2;
+        int state = 1;
 
         Email email = Email.builder()
                 .emailId(1L)
@@ -81,7 +81,7 @@ class EmailServiceTest {
                 .emailId(1L)
                 .emailFrom("test@gbtec.com")
                 .emailBody("This is a test email body")
-                .state(1)
+                .state(EmailStateEnum.SEND.getStateCode())
                 .build();
 
         when(emailDao.findById(1L)).thenReturn(Optional.of(email));
@@ -141,13 +141,13 @@ class EmailServiceTest {
         email1.setEmailId(1L);
         email1.setEmailFrom("sender1@example.com");
         email1.setEmailBody("Body of email 1");
-        email1.setState(2);
+        email1.setState(EmailStateEnum.DRAFT.getStateCode());
 
         Email email2 = new Email();
         email2.setEmailId(2L);
         email2.setEmailFrom("sender2@example.com");
         email2.setEmailBody("Body of email 2");
-        email2.setState(2);
+        email2.setState(EmailStateEnum.DRAFT.getStateCode());
 
         List<Email> emailList = Arrays.asList(email1, email2);
 
