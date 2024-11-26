@@ -34,7 +34,7 @@ public class EmailFacade {
     /**
      *
      * @param emailsToCreate
-     * @return
+     * @return A List of created emails
      */
     public List<Email> createEmails(List<Email> emailsToCreate){
         return emailService.createEmails(emailsToCreate);
