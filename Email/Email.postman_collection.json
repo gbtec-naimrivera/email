@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"emailFrom\": \"test@example.com\",\r\n  \"emailBody\": \"Este es el cuerpo del email.\",\r\n  \"state\": \"BORRADOR\"\r\n}",
+					"raw": "{\r\n  \"emailFrom\": \"marcus@example.com\",\r\n  \"emailBody\": \"This is the body of the email.\",\r\n  \"state\": 1,\r\n  \"emailTo\": [\r\n    {\r\n      \"email\": \"andrew@gbtec.com\"\r\n    },\r\n    {\r\n      \"email\": \"peter@gbtec.com\"\r\n    }\r\n  ],\r\n  \"emailCC\": [\r\n    {\r\n      \"email\": \"carl@example.com\"\r\n    }\r\n  ]\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -31,7 +31,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "[\r\n    {\r\n        \"emailFrom\": \"sender1@example.com\",\r\n        \"emailBody\": \"Body of email 1\",\r\n        \"state\": 1,\r\n        \"emailTo\": [\r\n            {\"emailAddress\": \"recipient1@example.com\"},\r\n            {\"emailAddress\": \"recipient2@example.com\"}\r\n        ],\r\n        \"emailCC\": [\r\n            {\"emailAddress\": \"cc1@example.com\"},\r\n            {\"emailAddress\": \"cc2@example.com\"}\r\n        ]\r\n    },\r\n    {\r\n        \"emailFrom\": \"sender2@example.com\",\r\n        \"emailBody\": \"Body of email 2\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\"emailAddress\": \"recipient3@example.com\"},\r\n            {\"emailAddress\": \"recipient4@example.com\"}\r\n        ],\r\n        \"emailCC\": [\r\n            {\"emailAddress\": \"cc3@example.com\"},\r\n            {\"emailAddress\": \"cc4@example.com\"}\r\n        ]\r\n    }\r\n]",
+					"raw": "[\r\n    {\r\n        \"emailFrom\": \"marcus@example.com\",\r\n        \"emailBody\": \"This is the body of the email.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n            \"email\": \"andrew@gbtec.com\"\r\n            },\r\n            {\r\n            \"email\": \"peter@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n            \"email\": \"carl@example.com\"\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"emailFrom\": \"marcus@example.com\",\r\n        \"emailBody\": \"This is the body of the email.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n            \"email\": \"andrew@gbtec.com\"\r\n            },\r\n            {\r\n            \"email\": \"peter@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n            \"email\": \"carl@example.com\"\r\n            }\r\n        ]\r\n    }\r\n]",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -44,9 +44,22 @@
 		},
 		{
 			"name": "Get Email",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails/752"
 			},
 			"response": []
 		},
@@ -54,7 +67,8 @@
 			"name": "Get Emails State",
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": "http://localhost:8080/emails/state/4"
 			},
 			"response": []
 		},
@@ -62,7 +76,8 @@
 			"name": "Get ALL Emails",
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": "http://localhost:8080/emails"
 			},
 			"response": []
 		},
@@ -71,7 +86,7 @@
 			"request": {
 				"method": "DELETE",
 				"header": [],
-				"url": "http://localhost:8080/emails/3"
+				"url": "http://localhost:8080/emails/13"
 			},
 			"response": []
 		},
@@ -82,14 +97,14 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "[1, 2] ",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "http://localhost:8080/emails/batch"
+				"url": "http://localhost:8080/emails/batch/14,15,16"
 			},
 			"response": []
 		},
@@ -100,14 +115,14 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"emailFrom\": \"newemail@example.com\",\r\n    \"emailBody\": \"Este es el contenido actualizado del correo.\"\r\n}",
+					"raw": "{\r\n  \"emailFrom\": \"marcus@example.com\",\r\n  \"emailBody\": \"This is the body of the email updated.\",\r\n  \"state\": 2,\r\n  \"emailTo\": [\r\n    {\r\n      \"email\": \"andrew2@gbtec.com\"\r\n    },\r\n    {\r\n      \"email\": \"peter2@gbtec.com\"\r\n    }\r\n  ],\r\n  \"emailCC\": [\r\n    {\r\n      \"email\": \"carl2@example.com\"\r\n    }\r\n  ]\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "http://localhost:8080/emails/1"
+				"url": "http://localhost:8080/emails/14"
 			},
 			"response": []
 		},
@@ -118,7 +133,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "[\r\n    {\r\n        \"emailId\": 5,\r\n        \"emailFrom\": \"updated1@example.com\",\r\n        \"emailBody\": \"Actualizado email con id 5\",\r\n        \"state\": \"BORRADOR\"\r\n    },\r\n    {\r\n        \"emailId\": 6,\r\n        \"emailFrom\": \"updated2@example.com\",\r\n        \"emailBody\": \"Actualizado email con id 6\",\r\n        \"state\": \"BORRADOR\"\r\n    }\r\n]",
+					"raw": "[\r\n    {\r\n        \"emailId\": 15,\r\n        \"emailFrom\": \"marcus2@example.com\",\r\n        \"emailBody\": \"This is the body of the email updated.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n                \"email\": \"andrew2@gbtec.com\"\r\n            },\r\n            {\r\n                \"email\": \"peter2@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n                \"email\": \"carl2@example.com\"\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"emailId\": 16,\r\n        \"emailFrom\": \"marcus2@example.com\",\r\n        \"emailBody\": \"This is the body of the email updated.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n                \"email\": \"andrew2@gbtec.com\"\r\n            },\r\n            {\r\n                \"email\": \"peter2@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n                \"email\": \"carl2@example.com\"\r\n            }\r\n        ]\r\n    }\r\n]",
 					"options": {
 						"raw": {
 							"language": "json"
