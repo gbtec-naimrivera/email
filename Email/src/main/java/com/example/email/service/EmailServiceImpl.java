@@ -12,14 +12,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Service implementation for managing emails.
- * This service handles operations such as creating, updating, deleting, and retrieving emails.
+ * <p>Service for managing email-related operations.</p>
+ * <p>This service handles tasks such as creating, updating, retrieving, and deleting emails,
+ * as well as marking emails as spam.</p>
  */
 @Service
 @Transactional
@@ -35,132 +35,81 @@ public class EmailServiceImpl {
     private EmailToDao emailToDao;
 
     /**
-     * Creates a new email.
+     * <p>Creates a new email.</p>
      *
-     * @param emailFrom        Sender's email address.
-     * @param emailBody        Email body content.
-     * @param state            Email state (e.g., 1 = Sent, 2 = Draft).
+     * @param emailFrom Sender's email address.
+     * @param emailBody The content of the email.
+     * @param state The state of the email (e.g., Draft, Sent).
      * @param emailToAddresses List of recipient email addresses.
      * @param emailCCAddresses List of CC email addresses.
-     * @return The created Email object.
+     * @return The created email.
      */
-    public Email createEmail(String emailFrom, String emailBody, int state, List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
+    public Email createEmail(String emailFrom, String emailBody, int state,
+                             List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
+
         Email email = new Email();
         email.setEmailFrom(emailFrom);
         email.setEmailBody(emailBody);
         email.setState(state);
-        email = emailDao.save(email);
 
-        Email finalEmail = email;
+        emailToAddresses.forEach(emailTo -> emailTo.setEmail(email));
+        emailCCAddresses.forEach(emailCC -> emailCC.setEmail(email));
 
-        List<EmailTo> emailTos = emailToAddresses.stream()
-                .map(address -> {
-                    EmailTo emailTo = new EmailTo();
-                    emailTo.setEmail(finalEmail);
-                    emailTo.setEmailAddress(address.getEmailAddress());
-                    return emailTo;
-                })
-                .collect(Collectors.toList());
+        email.setEmailTo(emailToAddresses);
+        email.setEmailCC(emailCCAddresses);
 
-        emailToDao.saveAll(emailTos);
-
-        List<EmailCC> emailCCs = emailCCAddresses.stream()
-                .map(address -> EmailCC.builder()
-                        .email(finalEmail)
-                        .emailAddress(address.getEmailAddress())
-                        .build())
-                .collect(Collectors.toList());
-
-        emailCCDao.saveAll(emailCCs);
-
-        email.setEmailTo(emailTos);
-        email.setEmailCC(emailCCs);
-
-        return email;
+        return emailDao.save(email);
     }
 
     /**
-     * Creates multiple emails in batch.
+     * <p>Creates multiple emails in batch.</p>
      *
-     * @param emailsToCreate List of Email objects to create.
-     * @return List of created Email objects.
+     * @param emailsToCreate List of email objects to create.
+     * @return List of created email objects.
      */
+    @Transactional
     public List<Email> createEmails(List<Email> emailsToCreate) {
-        List<Email> createdEmails = new ArrayList<>();
+        emailsToCreate.forEach(email -> {
+            email.getEmailTo().forEach(emailTo -> emailTo.setEmail(email));
+            email.getEmailCC().forEach(emailCC -> emailCC.setEmail(email));
+        });
 
-        for (Email emailDetails : emailsToCreate) {
-            Email email = new Email();
-            email.setEmailFrom(emailDetails.getEmailFrom());
-            email.setEmailBody(emailDetails.getEmailBody());
-            email.setState(emailDetails.getState());
-            email = emailDao.save(email);
-
-            Email finalEmail = email;
-            List<EmailTo> emailTos = emailDetails.getEmailTo().stream()
-                    .map(address -> {
-                        EmailTo emailTo = new EmailTo();
-                        emailTo.setEmail(finalEmail);
-                        emailTo.setEmailAddress(address.getEmailAddress());
-                        return emailTo;
-                    })
-                    .collect(Collectors.toList());
-
-            emailToDao.saveAll(emailTos);
-
-            Email finalEmail1 = email;
-            List<EmailCC> emailCCs = emailDetails.getEmailCC().stream()
-                    .map(address -> EmailCC.builder()
-                            .email(finalEmail1)
-                            .emailAddress(address.getEmailAddress())
-                            .build())
-                    .collect(Collectors.toList());
-
-            emailCCDao.saveAll(emailCCs);
-
-            email.setEmailTo(emailTos);
-            email.setEmailCC(emailCCs);
-
-            createdEmails.add(email);
-        }
-
-        return createdEmails;
+        return emailDao.saveAll(emailsToCreate);
     }
 
     /**
-     * Retrieves an email by its ID.
+     * <p>Retrieves an email by its ID.</p>
      *
      * @param emailId The ID of the email to retrieve.
-     * @return The Email object with the given ID.
-     * @throws ResourceNotFoundException If the email with the specified ID is not found.
+     * @return The email with the specified ID.
+     * @throws ResourceNotFoundException If no email is found with the specified ID.
      */
     public Email getEmailById(Long emailId) {
-        Optional<Email> email = emailDao.findById(emailId);
-
-        if (email.isEmpty()) {
-            throw new ResourceNotFoundException("Email with emailId " + emailId + " was not found");
-        }
-
-        return email.get();
+        return emailDao.findById(emailId)
+                .orElseThrow(() -> new ResourceNotFoundException("Email with emailId " + emailId + " was not found"));
     }
 
     /**
-     * Updates an existing email.
+     * <p>Updates an existing email.</p>
      *
-     * @param emailId           The ID of the email to update.
-     * @param emailFrom         Sender's email address.
-     * @param emailBody         New body content for the email.
-     * @param state             New state for the email.
-     * @param emailToAddresses  Updated list of recipient email addresses.
-     * @param emailCCAddresses  Updated list of CC email addresses.
-     * @return The updated Email object.
+     * @param emailId The ID of the email to update.
+     * @param emailFrom Sender's email address.
+     * @param emailBody The content of the email.
+     * @param state The state of the email (e.g., Draft, Sent).
+     * @param emailToAddresses List of recipient email addresses.
+     * @param emailCCAddresses List of CC email addresses.
+     * @return The updated email.
      * @throws ResourceNotFoundException If the email with the specified ID is not found.
-     * @throws InvalidEmailStateException If the email's state is invalid for updating.
+     * @throws InvalidEmailStateException If the email state is not valid for updating.
      */
-    public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state, List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
+    @Transactional
+    public Email updateEmail(Long emailId, String emailFrom, String emailBody, int state,
+                             List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
+
         Email email = emailDao.findById(emailId).orElseThrow(() ->
                 new ResourceNotFoundException("Email with emailId " + emailId + " was not found"));
 
-        if (email.getState() != EmailStateEnum.DRAFT.getStateCode()) {  // State 2 = Draft
+        if (email.getState() != EmailStateEnum.DRAFT.getStateCode()) {
             throw new InvalidEmailStateException("Email state is not valid to update");
         }
 
@@ -168,78 +117,40 @@ public class EmailServiceImpl {
         email.setEmailBody(emailBody);
         email.setState(state);
 
-        List<EmailTo> existingTos = email.getEmailTo();
-        if (existingTos == null) {
-            existingTos = new ArrayList<>();
-        }
+        emailToDao.deleteAll(email.getEmailTo());
+        emailCCDao.deleteAll(email.getEmailCC());
 
-        for (int i = 0; i < emailToAddresses.size(); i++) {
-            if (i < existingTos.size()) {
-                existingTos.get(i).setEmailAddress(emailToAddresses.get(i).getEmailAddress());
-            } else {
-                EmailTo newTo = emailToAddresses.get(i);
-                newTo.setEmail(email);
-                existingTos.add(newTo);
-            }
-        }
+        emailToAddresses.forEach(emailTo -> emailTo.setEmail(email));
+        emailCCAddresses.forEach(emailCC -> emailCC.setEmail(email));
 
-        emailToDao.saveAll(existingTos);
-
-        List<EmailCC> existingCCs = email.getEmailCC();
-        if (existingCCs == null) {
-            existingCCs = new ArrayList<>();
-        }
-
-        for (int i = 0; i < emailCCAddresses.size(); i++) {
-            if (i < existingCCs.size()) {
-                existingCCs.get(i).setEmailAddress(emailCCAddresses.get(i).getEmailAddress());
-            } else {
-                EmailCC newCC = emailCCAddresses.get(i);
-                newCC.setEmail(email);
-                existingCCs.add(newCC);
-            }
-        }
-
-        emailCCDao.saveAll(existingCCs);
-
-        email.setEmailTo(existingTos);
-        email.setEmailCC(existingCCs);
+        email.setEmailTo(emailToAddresses);
+        email.setEmailCC(emailCCAddresses);
 
         return emailDao.save(email);
     }
 
     /**
-     * Updates multiple emails in batch.
+     * <p>Updates multiple emails in batch.</p>
      *
-     * @param emailsToUpdate List of Email objects to update.
-     * @return List of updated Email objects.
+     * @param emailsToUpdate List of email objects to update.
+     * @return List of updated email objects.
      */
+    @Transactional
     public List<Email> updateEmails(List<Email> emailsToUpdate) {
-        List<Email> updatedEmails = new ArrayList<>();
-
-        for (Email emailDetails : emailsToUpdate) {
-            try {
-                Email updatedEmail = updateEmail(
-                        emailDetails.getEmailId(),
-                        emailDetails.getEmailFrom(),
-                        emailDetails.getEmailBody(),
-                        emailDetails.getState(),
-                        emailDetails.getEmailTo(),
-                        emailDetails.getEmailCC()
-                );
-                updatedEmails.add(updatedEmail);
-            } catch (ResourceNotFoundException e) {
-                throw new ResourceNotFoundException("Email with emailId " + emailDetails.getEmailId() + " was not found");
-            } catch (InvalidEmailStateException e) {
-                throw new InvalidEmailStateException("Email state is not valid to update for emailId " + emailDetails.getEmailId());
-            }
-        }
-
-        return updatedEmails;
+        return emailsToUpdate.stream()
+                .map(email -> updateEmail(
+                        email.getEmailId(),
+                        email.getEmailFrom(),
+                        email.getEmailBody(),
+                        email.getState(),
+                        email.getEmailTo(),
+                        email.getEmailCC()
+                ))
+                .collect(Collectors.toList());
     }
 
     /**
-     * Retrieves all emails.
+     * <p>Retrieves all emails.</p>
      *
      * @return List of all emails.
      */
@@ -249,7 +160,7 @@ public class EmailServiceImpl {
     }
 
     /**
-     * Deletes an email by its ID.
+     * <p>Deletes an email by its ID.</p>
      *
      * @param emailId The ID of the email to delete.
      */
@@ -262,7 +173,7 @@ public class EmailServiceImpl {
     }
 
     /**
-     * Deletes multiple emails in batch.
+     * <p>Deletes multiple emails in batch.</p>
      *
      * @param emailIds List of email IDs to delete.
      */
@@ -271,7 +182,7 @@ public class EmailServiceImpl {
     }
 
     /**
-     * Retrieves emails filtered by their state.
+     * <p>Retrieves emails filtered by their state.</p>
      *
      * @param state The state of the emails to retrieve.
      * @return List of emails with the specified state.
@@ -281,16 +192,16 @@ public class EmailServiceImpl {
     }
 
     /**
-     * Marks emails from a specific sender as spam.
-     * This is a scheduled task that runs at 10:00 AM every day.
+     * <p>Marks emails from a specific sender as spam.</p>
+     * <p>This is a scheduled task that runs at 10:00 AM every day.</p>
      */
     @Scheduled(cron = "0 0 10 * * ?") // 10:00 AM
     public void markEmailsAsSpam() {
         List<Email> emails = emailDao.findByEmailFrom("carl@gbtec.es");
-        for (Email email : emails) {
+        emails.forEach(email -> {
             email.setState(EmailStateEnum.SPAM.getStateCode());
             email.setUpdatedAt(LocalDateTime.now());
-        }
+        });
         emailDao.saveAll(emails);
     }
 }

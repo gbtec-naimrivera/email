@@ -71,8 +71,6 @@ class EmailServiceTest {
         assertEquals(emailBody, createdEmail.getEmailBody());
         assertEquals(state, createdEmail.getState());
         verify(emailDao).save(any(Email.class));
-        verify(emailToDao).saveAll(anyList());
-        verify(emailCCDao).saveAll(anyList());
     }
 
     @Test
@@ -81,7 +79,7 @@ class EmailServiceTest {
                 .emailId(1L)
                 .emailFrom("test@gbtec.com")
                 .emailBody("This is a test email body")
-                .state(EmailStateEnum.SEND.getStateCode())
+                .state(EmailStateEnum.SENT.getStateCode())
                 .build();
 
         when(emailDao.findById(1L)).thenReturn(Optional.of(email));
@@ -115,24 +113,6 @@ class EmailServiceTest {
         verify(emailDao).findById(1L);
         verify(emailDao).delete(email);
     }
-
-    /*@Test
-    void testUpdateMultipleEmails() {
-        Email email1 = Email.builder().emailId(1L).state(EmailState.DRAFT).build();
-        Email email2 = Email.builder().emailId(2L).state(EmailState.DRAFT).build();
-
-        List<Email> emailsToUpdate = Arrays.asList(email1, email2);
-
-        when(emailDao.findById(anyLong())).thenReturn(Optional.of(email1), Optional.of(email2));
-        when(emailDao.save(any(Email.class))).thenReturn(email1, email2);
-
-        List<Email> updatedEmails = emailService.updateEmails(emailsToUpdate);
-
-        assertNotNull(updatedEmails);
-        assertEquals(2, updatedEmails.size());
-        verify(emailDao, times(2)).findById(anyLong());
-        verify(emailDao, times(2)).save(any(Email.class));
-    }*/
 
     @Test
     void testGetAllEmails() {

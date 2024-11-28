@@ -1,7 +1,8 @@
 package com.example.email.rest.controller;
 
-import com.example.email.entity.Email;
 import com.example.email.facade.EmailFacade;
+import com.example.email.dto.EmailRequestDTO;
+import com.example.email.dto.EmailResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,9 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller for managing email operations.
- * This controller exposes endpoints for creating, retrieving, updating, and deleting emails.
- * It also allows filtering emails by their state.
+ * <p>Contains email-related endpoints.</p>
  */
 @RestController
 @RequestMapping(value = "/emails")
@@ -22,28 +21,15 @@ public class EmailController {
     private EmailFacade emailFacade;
 
     /**
-     * Creates a single email.
+     * <p>Creates a single email.</p>
      *
-     * @param emailRequest The JSON object containing the email details to be created.
-     *                     It must include the following fields:
-     *                     - emailFrom: Sender's email address.
-     *                     - emailBody: Body of the email.
-     *                     - state: The email's state (1 = Sent, 2 = Draft, etc.).
-     *                     - emailTo: List of recipient email addresses.
-     *                     - emailCC: List of CC email addresses.
-     * @return ResponseEntity<Email> The created email.
-     *         Response with status 201 if the creation is successful, or 400 if the data is incorrect.
+     * @param emailRequestDTO The details of the email to be created.
+     * @return ResponseEntity<EmailResponseDTO> The created email.
      */
     @PostMapping
-    public ResponseEntity<Email> createEmail(@RequestBody Email emailRequest) {
+    public ResponseEntity<EmailResponseDTO> createEmail(@RequestBody EmailRequestDTO emailRequestDTO) {
         try {
-            Email createdEmail = emailFacade.createEmail(
-                    emailRequest.getEmailFrom(),
-                    emailRequest.getEmailBody(),
-                    emailRequest.getState(),
-                    emailRequest.getEmailTo(),
-                    emailRequest.getEmailCC()
-            );
+            EmailResponseDTO createdEmail = emailFacade.createEmail(emailRequestDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEmail);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -54,16 +40,15 @@ public class EmailController {
     }
 
     /**
-     * Creates multiple emails in batch.
+     * <p>Creates multiple emails in batch.</p>
      *
-     * @param emailsToCreate List of {@link Email} objects containing the emails to be created.
-     * @return ResponseEntity<List<Email>> List of created emails.
-     *         Response with status 201 if the creation is successful, or 500 if an error occurs.
+     * @param emailRequestDTOs List of {@link EmailRequestDTO} objects containing the emails to be created.
+     * @return ResponseEntity<List<EmailResponseDTO>> The list of created emails.
      */
     @PostMapping("/batch")
-    public ResponseEntity<List<Email>> createEmails(@RequestBody List<Email> emailsToCreate) {
+    public ResponseEntity<List<EmailResponseDTO>> createEmails(@RequestBody List<EmailRequestDTO> emailRequestDTOs) {
         try {
-            List<Email> createdEmails = emailFacade.createEmails(emailsToCreate);
+            List<EmailResponseDTO> createdEmails = emailFacade.createEmails(emailRequestDTOs);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEmails);
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,50 +57,39 @@ public class EmailController {
     }
 
     /**
-     * Retrieves all emails.
+     * <p>Retrieves all emails.</p>
      *
-     * @return ResponseEntity<List<Email>> List of all stored emails.
-     *         Response with status 200 (OK) if retrieval is successful.
+     * @return ResponseEntity<List<EmailResponseDTO>> List of all stored emails.
      */
     @GetMapping
-    public ResponseEntity<List<Email>> getAllEmails() {
-        List<Email> emails = emailFacade.getAllEmails();
+    public ResponseEntity<List<EmailResponseDTO>> getAllEmails() {
+        List<EmailResponseDTO> emails = emailFacade.getAllEmails();
         return ResponseEntity.ok(emails);
     }
 
     /**
-     * Retrieves an email by its ID.
+     * <p>Retrieves an email by its ID.</p>
      *
      * @param id The ID of the email to retrieve.
-     * @return ResponseEntity<Email> The email corresponding to the provided ID.
-     *         Response with status 200 (OK) if the email is found.
+     * @return ResponseEntity<EmailResponseDTO> The email corresponding to the provided ID.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Email> getEmailById(@PathVariable Long id) {
-        Email email = emailFacade.getEmailById(id);
+    public ResponseEntity<EmailResponseDTO> getEmailById(@PathVariable Long id) {
+        EmailResponseDTO email = emailFacade.getEmailById(id);
         return ResponseEntity.ok(email);
     }
 
     /**
-     * Updates an existing email.
+     * <p>Updates an existing email.</p>
      *
      * @param id The ID of the email to update.
-     * @param emailRequest The JSON object containing the new details for the email.
-     * @return ResponseEntity<Email> The updated email.
-     *         Response with status 201 (CREATED) if the update is successful.
-     *         Response with status 500 if an unexpected error occurs.
+     * @param emailRequestDTO The details of the email to be updated.
+     * @return ResponseEntity<EmailResponseDTO> The updated email.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Email> updateEmail(@PathVariable Long id, @RequestBody Email emailRequest) {
+    public ResponseEntity<EmailResponseDTO> updateEmail(@PathVariable Long id, @RequestBody EmailRequestDTO emailRequestDTO) {
         try {
-            Email updatedEmail = emailFacade.updateEmail(
-                    id,
-                    emailRequest.getEmailFrom(),
-                    emailRequest.getEmailBody(),
-                    emailRequest.getState(),
-                    emailRequest.getEmailTo(),
-                    emailRequest.getEmailCC()
-            );
+            EmailResponseDTO updatedEmail = emailFacade.updateEmail(id, emailRequestDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(updatedEmail);
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,20 +98,19 @@ public class EmailController {
     }
 
     /**
-     * Updates multiple emails in batch.
+     * <p>Updates multiple emails in batch.</p>
      *
-     * @param emailsToUpdate List of {@link Email} objects containing the emails to update.
-     * @return ResponseEntity<List<Email>> List of updated emails.
-     *         Response with status 200 (OK) if the update is successful.
+     * @param emailRequestDTOs List of {@link EmailRequestDTO} objects containing the emails to be updated.
+     * @return ResponseEntity<List<EmailResponseDTO>> The list of updated emails.
      */
     @PutMapping("/batch")
-    public ResponseEntity<List<Email>> updateEmails(@RequestBody List<Email> emailsToUpdate) {
-        List<Email> updatedEmails = emailFacade.updateEmails(emailsToUpdate);
+    public ResponseEntity<List<EmailResponseDTO>> updateEmails(@RequestBody List<EmailRequestDTO> emailRequestDTOs) {
+        List<EmailResponseDTO> updatedEmails = emailFacade.updateEmails(emailRequestDTOs);
         return ResponseEntity.ok(updatedEmails);
     }
 
     /**
-     * Deletes an email by its ID.
+     * <p>Deletes an email by its ID.</p>
      *
      * @param id The ID of the email to delete.
      * @return ResponseEntity<Void> Response with status 204 (No Content) if deletion is successful.
@@ -149,7 +122,7 @@ public class EmailController {
     }
 
     /**
-     * Deletes multiple emails in batch.
+     * <p>Deletes multiple emails in batch.</p>
      *
      * @param emailIds List of IDs of the emails to delete.
      * @return ResponseEntity<Void> Response with status 204 (No Content) if deletion is successful.
@@ -161,15 +134,14 @@ public class EmailController {
     }
 
     /**
-     * Retrieves all emails with a specific state.
+     * <p>Retrieves all emails with a specific state.</p>
      *
-     * @param state The state of the emails to retrieve (e.g., 1 for Sent, 2 for Draft).
-     * @return ResponseEntity<List<Email>> List of emails with the specified state.
-     *         Response with status 200 (OK) if retrieval is successful.
+     * @param state The state of the emails to retrieve.
+     * @return ResponseEntity<List<EmailResponseDTO>> List of emails with the specified state.
      */
     @GetMapping("/state/{state}")
-    public ResponseEntity<List<Email>> getEmailsByState(@PathVariable int state) {
-        List<Email> emails = emailFacade.getEmailsByState(state);
+    public ResponseEntity<List<EmailResponseDTO>> getEmailsByState(@PathVariable int state) {
+        List<EmailResponseDTO> emails = emailFacade.getEmailsByState(state);
         return ResponseEntity.ok(emails);
     }
 }

@@ -1,1 +1,0 @@
-ALTER TABLE emails ALTER COLUMN state TYPE INT;
