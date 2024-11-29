@@ -2,6 +2,7 @@ package com.example.email.converter;
 
 import com.example.email.entity.Email;
 import com.example.email.entity.EmailCC;
+import com.example.email.entity.EmailStateEnum;
 import com.example.email.entity.EmailTo;
 import com.example.email.dto.EmailRequestDTO;
 import com.example.email.dto.EmailResponseDTO;
@@ -28,7 +29,7 @@ public class EmailConverter {
         email.setEmailId(emailRequestDTO.getEmailId());
         email.setEmailFrom(emailRequestDTO.getEmailFrom());
         email.setEmailBody(emailRequestDTO.getEmailBody());
-        email.setState(emailRequestDTO.getState());
+        email.setState(EmailStateEnum.fromStateCode(emailRequestDTO.getState()));
 
         List<EmailTo> emailTos = emailRequestDTO.getEmailTo().stream()
                 .map(dto -> new EmailTo(email, dto.getEmail()))
@@ -55,7 +56,7 @@ public class EmailConverter {
         responseDTO.setEmailId(email.getEmailId());
         responseDTO.setEmailFrom(email.getEmailFrom());
         responseDTO.setEmailBody(email.getEmailBody());
-        responseDTO.setState(email.getState());
+        responseDTO.setState(email.getState().getStateCode());
 
         responseDTO.setEmailTo(email.getEmailTo().stream()
                 .map(emailTo -> new EmailAddressDTO(emailTo.getEmailAddress()))

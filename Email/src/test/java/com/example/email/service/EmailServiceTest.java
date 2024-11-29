@@ -60,7 +60,7 @@ class EmailServiceTest {
                 .emailId(1L)
                 .emailFrom(emailFrom)
                 .emailBody(emailBody)
-                .state(state)
+                .state(EmailStateEnum.fromStateCode(1))
                 .build();
 
         when(emailDao.save(any(Email.class))).thenReturn(email);
@@ -70,8 +70,43 @@ class EmailServiceTest {
         assertNotNull(createdEmail);
         assertEquals(emailFrom, createdEmail.getEmailFrom());
         assertEquals(emailBody, createdEmail.getEmailBody());
-        assertEquals(state, createdEmail.getState());
+        assertEquals(state, createdEmail.getState().getStateCode());
         verify(emailDao).save(any(Email.class));
+    }
+
+    @Test
+    void testCreateEmails() {
+
+        Email email1 = Email.builder()
+                .emailId(1L)
+                .emailFrom("sender1@gbtec.com")
+                .emailBody("Body of email 1")
+                .state(EmailStateEnum.DRAFT)
+                .emailTo(emailToList)
+                .emailCC(emailCCList)
+                .build();
+
+        Email email2 = Email.builder()
+                .emailId(2L)
+                .emailFrom("sender2@gbtec.com")
+                .emailBody("Body of email 2")
+                .state(EmailStateEnum.DRAFT)
+                .emailTo(emailToList)
+                .emailCC(emailCCList)
+                .build();
+
+        List<Email> emails = Arrays.asList(email1, email2);
+
+        when(emailDao.saveAll(anyList())).thenReturn(emails);
+
+        List<Email> createdEmails = emailService.createEmails(emails);
+
+        assertNotNull(createdEmails);
+        assertEquals(2, createdEmails.size());
+        assertEquals("sender1@gbtec.com", createdEmails.get(0).getEmailFrom());
+        assertEquals("sender2@gbtec.com", createdEmails.get(1).getEmailFrom());
+
+        verify(emailDao).saveAll(anyList());
     }
 
     @Test
@@ -80,7 +115,7 @@ class EmailServiceTest {
                 .emailId(1L)
                 .emailFrom("test@gbtec.com")
                 .emailBody("This is a test email body")
-                .state(EmailStateEnum.SENT.getStateCode())
+                .state(EmailStateEnum.SENT)
                 .build();
 
         when(emailDao.findById(1L)).thenReturn(Optional.of(email));
@@ -116,19 +151,30 @@ class EmailServiceTest {
     }
 
     @Test
+    void testDeleteEmailNotFound() {
+
+        when(emailDao.findById(999L)).thenReturn(Optional.empty());
+
+        emailService.deleteEmail(999L);
+
+        verify(emailDao).findById(999L);
+        verify(emailDao, never()).delete(any(Email.class));
+    }
+
+    @Test
     void testGetAllEmails() {
 
         Email email1 = new Email();
         email1.setEmailId(1L);
         email1.setEmailFrom("sender1@example.com");
         email1.setEmailBody("Body of email 1");
-        email1.setState(EmailStateEnum.DRAFT.getStateCode());
+        email1.setState(EmailStateEnum.DRAFT);
 
         Email email2 = new Email();
         email2.setEmailId(2L);
         email2.setEmailFrom("sender2@example.com");
         email2.setEmailBody("Body of email 2");
-        email2.setState(EmailStateEnum.DRAFT.getStateCode());
+        email2.setState(EmailStateEnum.DRAFT);
 
         List<Email> emailList = Arrays.asList(email1, email2);
 
@@ -150,7 +196,7 @@ class EmailServiceTest {
                 .emailId(1L)
                 .emailFrom("test@gbtec.com")
                 .emailBody("Test email body")
-                .state(EmailStateEnum.DRAFT.getStateCode())
+                .state(EmailStateEnum.DRAFT)
                 .build();
 
 
@@ -163,149 +209,11 @@ class EmailServiceTest {
         assertNotNull(updatedEmail);
         assertEquals("newSender@gbtec.com", updatedEmail.getEmailFrom());
         assertEquals("Updated email body", updatedEmail.getEmailBody());
-        assertEquals(EmailStateEnum.DRAFT.getStateCode(), updatedEmail.getState());
+        assertEquals(EmailStateEnum.DRAFT.getStateCode(), updatedEmail.getState().getStateCode());
 
         verify(emailDao).findById(1L);
         verify(emailDao).save(any(Email.class));
     }
-
-    @Test
-    void testCreateEmails() {
-
-        Email email1 = Email.builder()
-                .emailId(1L)
-                .emailFrom("sender1@gbtec.com")
-                .emailBody("Body of email 1")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .emailTo(emailToList)
-                .emailCC(emailCCList)
-                .build();
-
-        Email email2 = Email.builder()
-                .emailId(2L)
-                .emailFrom("sender2@gbtec.com")
-                .emailBody("Body of email 2")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .emailTo(emailToList)
-                .emailCC(emailCCList)
-                .build();
-
-        List<Email> emails = Arrays.asList(email1, email2);
-
-        when(emailDao.saveAll(anyList())).thenReturn(emails);
-
-        List<Email> createdEmails = emailService.createEmails(emails);
-
-        assertNotNull(createdEmails);
-        assertEquals(2, createdEmails.size());
-        assertEquals("sender1@gbtec.com", createdEmails.get(0).getEmailFrom());
-        assertEquals("sender2@gbtec.com", createdEmails.get(1).getEmailFrom());
-
-        verify(emailDao).saveAll(anyList());
-    }
-
-    @Test
-    void testGetEmailsByState() {
-
-        Email email1 = Email.builder()
-                .emailId(1L)
-                .emailFrom("sender1@gbtec.com")
-                .emailBody("Email body 1")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .build();
-
-        Email email2 = Email.builder()
-                .emailId(2L)
-                .emailFrom("sender2@gbtec.com")
-                .emailBody("Email body 2")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .build();
-
-        List<Email> emails = Arrays.asList(email1, email2);
-
-        when(emailDao.findByState(EmailStateEnum.DRAFT.getStateCode())).thenReturn(emails);
-
-        List<Email> result = emailService.getEmailsByState(EmailStateEnum.DRAFT.getStateCode());
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(EmailStateEnum.DRAFT.getStateCode(), result.get(0).getState());
-        assertEquals(EmailStateEnum.DRAFT.getStateCode(), result.get(1).getState());
-
-        verify(emailDao).findByState(EmailStateEnum.DRAFT.getStateCode());
-    }
-
-    @Test
-    void testDeleteEmails() {
-
-        Email email1 = Email.builder().emailId(1L).build();
-        Email email2 = Email.builder().emailId(2L).build();
-
-        List<Long> emailIds = Arrays.asList(1L, 2L);
-
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email1));
-        when(emailDao.findById(2L)).thenReturn(Optional.of(email2));
-
-        emailService.deleteEmails(emailIds);
-
-        verify(emailDao).deleteAllById(emailIds);
-    }
-
-    @Test
-    void testUpdateEmails() {
-
-        Email email1 = Email.builder()
-                .emailId(1L)
-                .emailFrom("sender1@gbtec.com")
-                .emailBody("Original body email 1")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .emailTo(emailToList)
-                .emailCC(emailCCList)
-                .build();
-
-        Email email2 = Email.builder()
-                .emailId(2L)
-                .emailFrom("sender2@gbtec.com")
-                .emailBody("Original body email 2")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .emailTo(emailToList)
-                .emailCC(emailCCList)
-                .build();
-
-        Email email1updated = Email.builder()
-                .emailId(1L)
-                .emailFrom("sender1@gbtec.com")
-                .emailBody("Update body email 1")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .emailTo(emailToList)
-                .emailCC(emailCCList)
-                .build();
-
-        Email email2updated = Email.builder()
-                .emailId(2L)
-                .emailFrom("sender2@gbtec.com")
-                .emailBody("Updated body email 2")
-                .state(EmailStateEnum.DRAFT.getStateCode())
-                .emailTo(emailToList)
-                .emailCC(emailCCList)
-                .build();
-
-
-        when(emailDao.save(email1)).thenReturn(email1);
-        when(emailDao.save(email2)).thenReturn(email2);
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email1));
-        when(emailDao.findById(2L)).thenReturn(Optional.of(email2));
-
-        List<Email> emailsList = Arrays.asList(email1updated, email2updated);
-
-        List<Email> emailsUpdated = emailService.updateEmails(emailsList);
-
-        assertNotNull(emailsUpdated);
-        assertEquals(emailsUpdated.get(0), email1updated);
-        assertEquals(emailsUpdated.get(1), email2updated);
-
-    }
-
 
     @Test
     void testUpdateEmailResourceNotFoundException() {
@@ -329,7 +237,7 @@ class EmailServiceTest {
                 .emailId(emailId)
                 .emailFrom("oldSender@gbtec.com")
                 .emailBody("Original body")
-                .state(EmailStateEnum.SENT.getStateCode())
+                .state(EmailStateEnum.SENT)
                 .build();
 
         when(emailDao.findById(emailId)).thenReturn(Optional.of(email));
@@ -342,16 +250,106 @@ class EmailServiceTest {
         verify(emailDao, never()).save(any(Email.class));
     }
 
+    @Test
+    void testUpdateEmails() {
+
+        Email email1 = Email.builder()
+                .emailId(1L)
+                .emailFrom("sender1@gbtec.com")
+                .emailBody("Original body email 1")
+                .state(EmailStateEnum.DRAFT)
+                .emailTo(emailToList)
+                .emailCC(emailCCList)
+                .build();
+
+        Email email2 = Email.builder()
+                .emailId(2L)
+                .emailFrom("sender2@gbtec.com")
+                .emailBody("Original body email 2")
+                .state(EmailStateEnum.DRAFT)
+                .emailTo(emailToList)
+                .emailCC(emailCCList)
+                .build();
+
+        Email email1updated = Email.builder()
+                .emailId(1L)
+                .emailFrom("sender1@gbtec.com")
+                .emailBody("Update body email 1")
+                .state(EmailStateEnum.DRAFT)
+                .emailTo(emailToList)
+                .emailCC(emailCCList)
+                .build();
+
+        Email email2updated = Email.builder()
+                .emailId(2L)
+                .emailFrom("sender2@gbtec.com")
+                .emailBody("Updated body email 2")
+                .state(EmailStateEnum.DRAFT)
+                .emailTo(emailToList)
+                .emailCC(emailCCList)
+                .build();
+
+
+        when(emailDao.save(email1)).thenReturn(email1);
+        when(emailDao.save(email2)).thenReturn(email2);
+        when(emailDao.findById(1L)).thenReturn(Optional.of(email1));
+        when(emailDao.findById(2L)).thenReturn(Optional.of(email2));
+
+        List<Email> emailsList = Arrays.asList(email1updated, email2updated);
+
+        List<Email> emailsUpdated = emailService.updateEmails(emailsList);
+
+        assertNotNull(emailsUpdated);
+        assertEquals(emailsUpdated.get(0), email1updated);
+        assertEquals(emailsUpdated.get(1), email2updated);
+
+    }
 
     @Test
-    void testDeleteEmailNotFound() {
+    void testGetEmailsByState() {
 
-        when(emailDao.findById(999L)).thenReturn(Optional.empty());
+        Email email1 = Email.builder()
+                .emailId(1L)
+                .emailFrom("sender1@gbtec.com")
+                .emailBody("Email body 1")
+                .state(EmailStateEnum.DRAFT)
+                .build();
 
-        emailService.deleteEmail(999L);
+        Email email2 = Email.builder()
+                .emailId(2L)
+                .emailFrom("sender2@gbtec.com")
+                .emailBody("Email body 2")
+                .state(EmailStateEnum.DRAFT)
+                .build();
 
-        verify(emailDao).findById(999L);
-        verify(emailDao, never()).delete(any(Email.class));
+        List<Email> emails = Arrays.asList(email1, email2);
+
+        when(emailDao.findByState(EmailStateEnum.DRAFT)).thenReturn(emails);
+
+        List<Email> result = emailService.getEmailsByState(EmailStateEnum.DRAFT);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(EmailStateEnum.DRAFT.getStateCode(), result.get(0).getState().getStateCode());
+        assertEquals(EmailStateEnum.DRAFT.getStateCode(), result.get(1).getState().getStateCode());
+
+        verify(emailDao).findByState(EmailStateEnum.DRAFT);
+    }
+
+    @Test
+    void testDeleteEmails() {
+
+        Email email1 = Email.builder().emailId(1L).build();
+        Email email2 = Email.builder().emailId(2L).build();
+
+        List<Long> emailIds = Arrays.asList(1L, 2L);
+
+        when(emailDao.findById(1L)).thenReturn(Optional.of(email1));
+        when(emailDao.findById(2L)).thenReturn(Optional.of(email2));
+
+        emailService.deleteEmails(emailIds);
+
+        verify(emailDao).deleteAllById(emailIds);
     }
 }
 

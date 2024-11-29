@@ -1,6 +1,7 @@
 package com.example.email.repositories;
 
 import com.example.email.entity.Email;
+import com.example.email.entity.EmailStateEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface EmailDao extends JpaRepository<Email, Long> {
      * @param state The state of the emails to retrieve (e.g., 1 for Sent, 2 for Draft).
      * @return A list of emails with the specified state.
      */
-    List<Email> findByState(int state);
+    List<Email> findByState(EmailStateEnum state);
 
     /**
      * <p>Finds a list of emails by the sender's email address.</p>

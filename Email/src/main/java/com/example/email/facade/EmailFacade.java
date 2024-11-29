@@ -4,6 +4,7 @@ import com.example.email.converter.EmailConverter;
 import com.example.email.entity.Email;
 import com.example.email.dto.EmailRequestDTO;
 import com.example.email.dto.EmailResponseDTO;
+import com.example.email.entity.EmailStateEnum;
 import com.example.email.service.EmailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class EmailFacade {
         Email createdEmail = emailService.createEmail(
                 email.getEmailFrom(),
                 email.getEmailBody(),
-                email.getState(),
+                email.getState().getStateCode(),
                 email.getEmailTo(),
                 email.getEmailCC()
         );
@@ -95,7 +96,7 @@ public class EmailFacade {
      * @return List<EmailResponseDTO> The list of emails with the specified state.
      */
     public List<EmailResponseDTO> getEmailsByState(int state) {
-        List<Email> emails = emailService.getEmailsByState(state);
+        List<Email> emails = emailService.getEmailsByState(EmailStateEnum.fromStateCode(state));
 
         return emails.stream()
                 .map(EmailConverter::convertToResponseDTO)
@@ -116,7 +117,7 @@ public class EmailFacade {
                 emailId,
                 emailToUpdate.getEmailFrom(),
                 emailToUpdate.getEmailBody(),
-                emailToUpdate.getState(),
+                emailToUpdate.getState().getStateCode(),
                 emailToUpdate.getEmailTo(),
                 emailToUpdate.getEmailCC()
         );

@@ -50,7 +50,7 @@ public class EmailServiceImpl {
         Email email = new Email();
         email.setEmailFrom(emailFrom);
         email.setEmailBody(emailBody);
-        email.setState(state);
+        email.setState(EmailStateEnum.fromStateCode(state));
 
         emailToAddresses.forEach(emailTo -> emailTo.setEmail(email));
         emailCCAddresses.forEach(emailCC -> emailCC.setEmail(email));
@@ -109,13 +109,13 @@ public class EmailServiceImpl {
         Email email = emailDao.findById(emailId).orElseThrow(() ->
                 new ResourceNotFoundException("Email with emailId " + emailId + " was not found"));
 
-        if (email.getState() != EmailStateEnum.DRAFT.getStateCode()) {
+        if (email.getState() != EmailStateEnum.DRAFT) {
             throw new InvalidEmailStateException("Email state is not valid to update");
         }
 
         email.setEmailFrom(emailFrom);
         email.setEmailBody(emailBody);
-        email.setState(state);
+        email.setState(EmailStateEnum.fromStateCode(state));
 
         emailToDao.deleteAll(email.getEmailTo());
         emailCCDao.deleteAll(email.getEmailCC());
@@ -142,7 +142,7 @@ public class EmailServiceImpl {
                         email.getEmailId(),
                         email.getEmailFrom(),
                         email.getEmailBody(),
-                        email.getState(),
+                        email.getState().getStateCode(),
                         email.getEmailTo(),
                         email.getEmailCC()
                 ))
@@ -187,7 +187,7 @@ public class EmailServiceImpl {
      * @param state The state of the emails to retrieve.
      * @return List of emails with the specified state.
      */
-    public List<Email> getEmailsByState(int state) {
+    public List<Email> getEmailsByState(EmailStateEnum state) {
         return emailDao.findByState(state);
     }
 
@@ -199,7 +199,7 @@ public class EmailServiceImpl {
     public void markEmailsAsSpam() {
         List<Email> emails = emailDao.findByEmailFrom("carl@gbtec.es");
         emails.forEach(email -> {
-            email.setState(EmailStateEnum.SPAM.getStateCode());
+            email.setState(EmailStateEnum.SPAM);
             email.setUpdatedAt(LocalDateTime.now());
         });
         emailDao.saveAll(emails);

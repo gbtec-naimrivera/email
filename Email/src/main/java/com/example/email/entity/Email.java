@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,7 +49,8 @@ public class Email {
      * <p>The state of the email (e.g., Sent, Draft, etc.).</p>
      */
     @Column(name = "state", nullable = false)
-    private int state;
+    @Enumerated(EnumType.STRING)
+    private EmailStateEnum state;
 
     /**
      * <p>The timestamp indicating the last update time of the email.</p>
