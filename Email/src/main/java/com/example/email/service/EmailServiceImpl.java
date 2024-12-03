@@ -37,11 +37,7 @@ public class EmailServiceImpl {
     /**
      * <p>Creates a new email.</p>
      *
-     * @param emailFrom Sender's email address.
-     * @param emailBody The content of the email.
-     * @param state The state of the email (e.g., Draft, Sent).
-     * @param emailToAddresses List of recipient email addresses.
-     * @param emailCCAddresses List of CC email addresses.
+     * @param email Email data to create a new email.
      * @return The created email.
      */
     public Email createEmail(Email email) {
