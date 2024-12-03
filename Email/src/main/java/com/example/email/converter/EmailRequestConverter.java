@@ -5,8 +5,6 @@ import com.example.email.entity.EmailCC;
 import com.example.email.entity.EmailStateEnum;
 import com.example.email.entity.EmailTo;
 import com.example.email.dto.EmailRequestDTO;
-import com.example.email.dto.EmailResponseDTO;
-import com.example.email.dto.EmailAddressDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;

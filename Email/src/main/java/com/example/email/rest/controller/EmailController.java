@@ -1,6 +1,5 @@
 package com.example.email.rest.controller;
 
-import com.example.email.entity.EmailStateEnum;
 import com.example.email.facade.EmailFacade;
 import com.example.email.dto.EmailRequestDTO;
 import com.example.email.dto.EmailResponseDTO;

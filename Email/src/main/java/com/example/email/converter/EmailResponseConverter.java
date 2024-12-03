@@ -1,7 +1,6 @@
 package com.example.email.converter;
 
 import com.example.email.dto.EmailAddressDTO;
-import com.example.email.dto.EmailRequestDTO;
 import com.example.email.dto.EmailResponseDTO;
 import com.example.email.entity.Email;
 

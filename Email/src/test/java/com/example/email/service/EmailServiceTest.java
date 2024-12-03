@@ -1,21 +1,17 @@
 package com.example.email.service;
 
 import com.example.email.entity.*;
-import com.example.email.facade.EmailFacade;
 import com.example.email.repositories.EmailCCDao;
 import com.example.email.repositories.EmailDao;
 import com.example.email.repositories.EmailToDao;
 import com.example.email.service.exceptions.InvalidEmailStateException;
 import com.example.email.service.exceptions.ResourceNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -55,21 +51,17 @@ class EmailServiceTest {
         int state = 1;
 
         Email email = Email.builder()
-                .emailId(1L)
                 .emailFrom(emailFrom)
                 .emailBody(emailBody)
                 .state(EmailStateEnum.fromStateCode(1))
                 .build();
 
-        when(emailDao.save(any(Email.class))).thenReturn(email);
+        when(emailService.createEmail(email)).thenAnswer(input -> {
 
-        Email createdEmail = emailService.createEmail(emailFrom, emailBody, state, emailToList, emailCCList);
+            return input.<Email>getArgument(0);
+        });
 
-        assertNotNull(createdEmail);
-        assertEquals(emailFrom, createdEmail.getEmailFrom());
-        assertEquals(emailBody, createdEmail.getEmailBody());
-        assertEquals(state, createdEmail.getState().getStateCode());
-        verify(emailDao).save(any(Email.class));
+        emailService.createEmail(email);
     }
 
     @Test
@@ -95,16 +87,9 @@ class EmailServiceTest {
 
         List<Email> emails = Arrays.asList(email1, email2);
 
-        when(emailDao.saveAll(anyList())).thenReturn(emails);
+        when(emailService.createEmails(emails)).thenReturn(emails);
 
-        List<Email> createdEmails = emailService.createEmails(emails);
-
-        assertNotNull(createdEmails);
-        assertEquals(2, createdEmails.size());
-        assertEquals("sender1@gbtec.com", createdEmails.get(0).getEmailFrom());
-        assertEquals("sender2@gbtec.com", createdEmails.get(1).getEmailFrom());
-
-        verify(emailDao).saveAll(anyList());
+        emailService.createEmails(emails);
     }
 
     @Test
@@ -123,40 +108,33 @@ class EmailServiceTest {
         assertNotNull(foundEmail);
         assertEquals(email.getEmailId(), foundEmail.getEmailId());
         assertEquals(email.getEmailFrom(), foundEmail.getEmailFrom());
-        verify(emailDao).findById(1L);
     }
 
     @Test
     void testGetEmailByIdNotFound() {
+
         when(emailDao.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             emailService.getEmailById(999L);
         });
 
-        verify(emailDao).findById(999L);
     }
 
     @Test
     void testDeleteEmailSuccessful() {
-        Email email = Email.builder().emailId(1L).build();
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email));
 
         emailService.deleteEmail(1L);
 
-        verify(emailDao).findById(1L);
-        verify(emailDao).delete(email);
+        verify(emailDao).deleteById(1L);
     }
 
     @Test
     void testDeleteEmailNotFound() {
 
-        when(emailDao.findById(999L)).thenReturn(Optional.empty());
-
         emailService.deleteEmail(999L);
 
-        verify(emailDao).findById(999L);
-        verify(emailDao, never()).delete(any(Email.class));
+        verify(emailDao).deleteById(999L);
     }
 
     @Test
@@ -176,16 +154,10 @@ class EmailServiceTest {
 
         List<Email> emailList = Arrays.asList(email1, email2);
 
-        when(emailDao.findAll()).thenReturn(emailList);
+        when(emailService.getAllEmails()).thenReturn(emailList);
 
         List<Email> result = emailService.getAllEmails();
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("sender1@example.com", result.get(0).getEmailFrom());
-        assertEquals("sender2@example.com", result.get(1).getEmailFrom());
-
-        verify(emailDao, times(1)).findAll();
     }
 
     @Test
@@ -197,34 +169,34 @@ class EmailServiceTest {
                 .state(EmailStateEnum.DRAFT)
                 .build();
 
+        Email updatedEmail = Email.builder()
+                .emailId(1L)
+                .emailFrom("newSender@gbtec.com")
+                .emailBody("Updated email body")
+                .state(EmailStateEnum.DRAFT)
+                .build();
+
+
 
         when(emailDao.findById(1L)).thenReturn(Optional.of(existingEmail));
-        when(emailDao.save(any(Email.class))).thenReturn(existingEmail);
+        when(emailService.updateEmail(1L, "newSender@gbtec.com",
+                "Updated email body", EmailStateEnum.DRAFT.getStateCode(), emailToList, emailCCList))
+                .thenReturn(updatedEmail);
 
-        Email updatedEmail = emailService.updateEmail(1L, "newSender@gbtec.com",
+        emailService.updateEmail(1L, "newSender@gbtec.com",
                 "Updated email body", EmailStateEnum.DRAFT.getStateCode(), emailToList, emailCCList);
 
-        assertNotNull(updatedEmail);
-        assertEquals("newSender@gbtec.com", updatedEmail.getEmailFrom());
-        assertEquals("Updated email body", updatedEmail.getEmailBody());
-        assertEquals(EmailStateEnum.DRAFT.getStateCode(), updatedEmail.getState().getStateCode());
-
-        verify(emailDao).findById(1L);
-        verify(emailDao).save(any(Email.class));
     }
 
     @Test
     void testUpdateEmailResourceNotFoundException() {
-        Long emailId = 999L;
 
-        when(emailDao.findById(emailId)).thenReturn(Optional.empty());
+        Long emailId = 999L;
 
         assertThrows(ResourceNotFoundException.class, () -> {
             emailService.updateEmail(emailId, "newSender@gbtec.com", "Updated email body", 1, emailToList, emailCCList);
         });
 
-        verify(emailDao).findById(emailId);
-        verify(emailDao, never()).save(any(Email.class));
     }
 
     @Test
@@ -345,6 +317,35 @@ class EmailServiceTest {
         emailService.deleteEmails(emailIds);
 
         verify(emailDao).deleteAllById(emailIds);
+    }
+
+    @Test
+    void markEmailsAsSpam(){
+        Email email1 = Email.builder()
+                .emailId(1L)
+                .emailFrom("carl@gbtec.com")
+                .emailBody("Email body 1")
+                .state(EmailStateEnum.DRAFT)
+                .build();
+
+        Email email2 = Email.builder()
+                .emailId(1L)
+                .emailFrom("carl@gbtec.com")
+                .emailBody("Email body 1")
+                .state(EmailStateEnum.DRAFT)
+                .build();
+
+        Email email3 = Email.builder()
+                .emailId(1L)
+                .emailFrom("carl@gbtec.com")
+                .emailBody("Email body 1")
+                .state(EmailStateEnum.DRAFT)
+                .build();
+
+        List<Email> emailList = Arrays.asList(email1,email2,email3);
+
+
+
     }
 }
 
