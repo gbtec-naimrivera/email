@@ -44,20 +44,7 @@ public class EmailServiceImpl {
      * @param emailCCAddresses List of CC email addresses.
      * @return The created email.
      */
-    public Email createEmail(String emailFrom, String emailBody, int state,
-                             List<EmailTo> emailToAddresses, List<EmailCC> emailCCAddresses) {
-
-        Email email = new Email();
-        email.setEmailFrom(emailFrom);
-        email.setEmailBody(emailBody);
-        email.setState(EmailStateEnum.fromStateCode(state));
-
-        emailToAddresses.forEach(emailTo -> emailTo.setEmail(email));
-        emailCCAddresses.forEach(emailCC -> emailCC.setEmail(email));
-
-        email.setEmailTo(emailToAddresses);
-        email.setEmailCC(emailCCAddresses);
-
+    public Email createEmail(Email email) {
         return emailDao.save(email);
     }
 
@@ -165,11 +152,7 @@ public class EmailServiceImpl {
      * @param emailId The ID of the email to delete.
      */
     public void deleteEmail(Long emailId) {
-        Optional<Email> emailOptional = emailDao.findById(emailId);
-        if (emailOptional.isPresent()) {
-            Email email = emailOptional.get();
-            emailDao.delete(email);
-        }
+        emailDao.deleteById(emailId);
     }
 
     /**
@@ -197,7 +180,7 @@ public class EmailServiceImpl {
      */
     @Scheduled(cron = "0 0 10 * * ?") // 10:00 AM
     public void markEmailsAsSpam() {
-        List<Email> emails = emailDao.findByEmailFrom("carl@gbtec.es");
+        List<Email> emails = emailDao.findByEmailFrom("carl@gbtec.com");
         emails.forEach(email -> {
             email.setState(EmailStateEnum.SPAM);
             email.setUpdatedAt(LocalDateTime.now());

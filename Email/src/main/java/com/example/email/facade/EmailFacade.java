@@ -38,13 +38,7 @@ public class EmailFacade {
 
         Email email = convertToEntity(emailRequestDTO);
 
-        Email createdEmail = emailService.createEmail(
-                email.getEmailFrom(),
-                email.getEmailBody(),
-                email.getState().getStateCode(),
-                email.getEmailTo(),
-                email.getEmailCC()
-        );
+        Email createdEmail = emailService.createEmail(email);
 
         return convertToResponseDTO(createdEmail);
     }
