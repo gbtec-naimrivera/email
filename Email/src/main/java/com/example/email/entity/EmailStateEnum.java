@@ -51,11 +51,12 @@ public enum EmailStateEnum {
      * @throws IllegalArgumentException If the state code is unknown.
      */
     public static EmailStateEnum fromStateCode(int stateCode) {
-        for (EmailStateEnum state : values()) {
-            if (state.getStateCode() == stateCode) {
-                return state;
-            }
-        }
-        throw new IllegalArgumentException("Unknown state code: " + stateCode);
+        return switch (stateCode) {
+            case 1 -> SENT;
+            case 2 -> DRAFT;
+            case 3 -> DELETED;
+            case 4 -> SPAM;
+            default -> throw new IllegalArgumentException("Unknown state code: " + stateCode);
+        };
     }
 }

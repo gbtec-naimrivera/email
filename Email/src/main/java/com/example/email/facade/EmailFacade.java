@@ -1,6 +1,7 @@
 package com.example.email.facade;
 
-import com.example.email.converter.EmailConverter;
+import com.example.email.converter.EmailRequestConverter;
+import com.example.email.converter.EmailResponseConverter;
 import com.example.email.entity.Email;
 import com.example.email.dto.EmailRequestDTO;
 import com.example.email.dto.EmailResponseDTO;
@@ -13,8 +14,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.example.email.converter.EmailConverter.convertToEntity;
-import static com.example.email.converter.EmailConverter.convertToResponseDTO;
+import static com.example.email.converter.EmailRequestConverter.convertToEntity;
+import static com.example.email.converter.EmailResponseConverter.convertToResponseDTO;
 
 /**
  * <p>Facade for managing email-related operations.</p>
@@ -34,6 +35,7 @@ public class EmailFacade {
      * @return EmailResponseDTO The created email.
      */
     public EmailResponseDTO createEmail(EmailRequestDTO emailRequestDTO) {
+
         Email email = convertToEntity(emailRequestDTO);
 
         Email createdEmail = emailService.createEmail(
@@ -55,13 +57,13 @@ public class EmailFacade {
      */
     public List<EmailResponseDTO> createEmails(List<EmailRequestDTO> emailsToCreate) {
         List<Email> emails = emailsToCreate.stream()
-                .map(EmailConverter::convertToEntity)
+                .map(EmailRequestConverter::convertToEntity)
                 .collect(Collectors.toList());
 
         List<Email> createdEmails = emailService.createEmails(emails);
 
         return createdEmails.stream()
-                .map(EmailConverter::convertToResponseDTO)
+                .map(EmailResponseConverter::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -74,7 +76,7 @@ public class EmailFacade {
         List<Email> emails = emailService.getAllEmails();
 
         return emails.stream()
-                .map(EmailConverter::convertToResponseDTO)
+                .map(EmailResponseConverter::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -99,7 +101,7 @@ public class EmailFacade {
         List<Email> emails = emailService.getEmailsByState(EmailStateEnum.fromStateCode(state));
 
         return emails.stream()
-                .map(EmailConverter::convertToResponseDTO)
+                .map(EmailResponseConverter::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -133,13 +135,13 @@ public class EmailFacade {
      */
     public List<EmailResponseDTO> updateEmails(List<EmailRequestDTO> emailsToUpdate) {
         List<Email> emails = emailsToUpdate.stream()
-                .map(EmailConverter::convertToEntity)
+                .map(EmailRequestConverter::convertToEntity)
                 .collect(Collectors.toList());
 
         List<Email> updatedEmails = emailService.updateEmails(emails);
 
         return updatedEmails.stream()
-                .map(EmailConverter::convertToResponseDTO)
+                .map(EmailResponseConverter::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 

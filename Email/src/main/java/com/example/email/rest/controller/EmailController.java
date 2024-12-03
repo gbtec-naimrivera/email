@@ -15,7 +15,6 @@ import java.util.List;
  * <p>Contains email-related endpoints.</p>
  */
 @RestController
-@RequestMapping(value = "/emails")
 public class EmailController {
 
     @Autowired
@@ -27,7 +26,7 @@ public class EmailController {
      * @param emailRequestDTO The details of the email to be created.
      * @return ResponseEntity<EmailResponseDTO> The created email.
      */
-    @PostMapping
+    @PostMapping("/email")
     public ResponseEntity<EmailResponseDTO> createEmail(@RequestBody EmailRequestDTO emailRequestDTO) {
         try {
             EmailResponseDTO createdEmail = emailFacade.createEmail(emailRequestDTO);
@@ -46,7 +45,7 @@ public class EmailController {
      * @param emailRequestDTOs List of {@link EmailRequestDTO} objects containing the emails to be created.
      * @return ResponseEntity<List<EmailResponseDTO>> The list of created emails.
      */
-    @PostMapping("/batch")
+    @PostMapping("/emails")
     public ResponseEntity<List<EmailResponseDTO>> createEmails(@RequestBody List<EmailRequestDTO> emailRequestDTOs) {
         try {
             List<EmailResponseDTO> createdEmails = emailFacade.createEmails(emailRequestDTOs);
@@ -62,7 +61,7 @@ public class EmailController {
      *
      * @return ResponseEntity<List<EmailResponseDTO>> List of all stored emails.
      */
-    @GetMapping
+    @GetMapping("/emails")
     public ResponseEntity<List<EmailResponseDTO>> getAllEmails() {
         List<EmailResponseDTO> emails = emailFacade.getAllEmails();
         return ResponseEntity.ok(emails);
@@ -74,7 +73,7 @@ public class EmailController {
      * @param id The ID of the email to retrieve.
      * @return ResponseEntity<EmailResponseDTO> The email corresponding to the provided ID.
      */
-    @GetMapping("/{id}")
+    @GetMapping("/emails/{id}")
     public ResponseEntity<EmailResponseDTO> getEmailById(@PathVariable Long id) {
         EmailResponseDTO email = emailFacade.getEmailById(id);
         return ResponseEntity.ok(email);
@@ -87,7 +86,7 @@ public class EmailController {
      * @param emailRequestDTO The details of the email to be updated.
      * @return ResponseEntity<EmailResponseDTO> The updated email.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/email/{id}")
     public ResponseEntity<EmailResponseDTO> updateEmail(@PathVariable Long id, @RequestBody EmailRequestDTO emailRequestDTO) {
         try {
             EmailResponseDTO updatedEmail = emailFacade.updateEmail(id, emailRequestDTO);
@@ -104,7 +103,7 @@ public class EmailController {
      * @param emailRequestDTOs List of {@link EmailRequestDTO} objects containing the emails to be updated.
      * @return ResponseEntity<List<EmailResponseDTO>> The list of updated emails.
      */
-    @PutMapping("/batch")
+    @PutMapping("/emails")
     public ResponseEntity<List<EmailResponseDTO>> updateEmails(@RequestBody List<EmailRequestDTO> emailRequestDTOs) {
         List<EmailResponseDTO> updatedEmails = emailFacade.updateEmails(emailRequestDTOs);
         return ResponseEntity.ok(updatedEmails);
@@ -116,7 +115,7 @@ public class EmailController {
      * @param id The ID of the email to delete.
      * @return ResponseEntity<Void> Response with status 204 (No Content) if deletion is successful.
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/email/{id}")
     public ResponseEntity<Void> deleteEmail(@PathVariable Long id) {
         emailFacade.deleteEmail(id);
         return ResponseEntity.noContent().build();
@@ -128,7 +127,7 @@ public class EmailController {
      * @param emailIds List of IDs of the emails to delete.
      * @return ResponseEntity<Void> Response with status 204 (No Content) if deletion is successful.
      */
-    @DeleteMapping("/batch/{emailIds}")
+    @DeleteMapping("/emails/{id}")
     public ResponseEntity<Void> deleteEmails(@PathVariable List<Long> emailIds) {
         emailFacade.deleteEmails(emailIds);
         return ResponseEntity.noContent().build();
@@ -140,7 +139,7 @@ public class EmailController {
      * @param state The state of the emails to retrieve.
      * @return ResponseEntity<List<EmailResponseDTO>> List of emails with the specified state.
      */
-    @GetMapping("/state/{state}")
+    @GetMapping("/emails/state/{state}")
     public ResponseEntity<List<EmailResponseDTO>> getEmailsByState(@PathVariable int state) {
         List<EmailResponseDTO> emails = emailFacade.getEmailsByState(state);
         return ResponseEntity.ok(emails);

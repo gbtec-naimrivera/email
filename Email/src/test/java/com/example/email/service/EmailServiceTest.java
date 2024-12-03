@@ -9,9 +9,11 @@ import com.example.email.service.exceptions.InvalidEmailStateException;
 import com.example.email.service.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class EmailServiceTest {
 
     @Mock
@@ -44,11 +47,6 @@ class EmailServiceTest {
             new EmailCC(null, null, "cc1@gbtec.com"),
             new EmailCC(null, null, "cc2@gbtec.com")
     );
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void testCreateEmail() {
@@ -343,9 +341,6 @@ class EmailServiceTest {
         Email email2 = Email.builder().emailId(2L).build();
 
         List<Long> emailIds = Arrays.asList(1L, 2L);
-
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email1));
-        when(emailDao.findById(2L)).thenReturn(Optional.of(email2));
 
         emailService.deleteEmails(emailIds);
 
