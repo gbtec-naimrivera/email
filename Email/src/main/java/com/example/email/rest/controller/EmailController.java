@@ -72,7 +72,7 @@ public class EmailController {
      * @param id The ID of the email to retrieve.
      * @return ResponseEntity<EmailResponseDTO> The email corresponding to the provided ID.
      */
-    @GetMapping("/emails/{id}")
+    @GetMapping("/email/{id}")
     public ResponseEntity<EmailResponseDTO> getEmailById(@PathVariable Long id) {
         EmailResponseDTO email = emailFacade.getEmailById(id);
         return ResponseEntity.ok(email);
@@ -123,12 +123,12 @@ public class EmailController {
     /**
      * <p>Deletes multiple emails in batch.</p>
      *
-     * @param emailIds List of IDs of the emails to delete.
+     * @param ids List of IDs of the emails to delete.
      * @return ResponseEntity<Void> Response with status 204 (No Content) if deletion is successful.
      */
-    @DeleteMapping("/emails/{id}")
-    public ResponseEntity<Void> deleteEmails(@PathVariable List<Long> emailIds) {
-        emailFacade.deleteEmails(emailIds);
+    @DeleteMapping("/emails/{ids}")
+    public ResponseEntity<Void> deleteEmails(@PathVariable List<Long> ids) {
+        emailFacade.deleteEmails(ids);
         return ResponseEntity.noContent().build();
     }
 

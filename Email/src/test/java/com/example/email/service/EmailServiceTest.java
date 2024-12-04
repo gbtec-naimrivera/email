@@ -1,21 +1,17 @@
 package com.example.email.service;
 
 import com.example.email.entity.*;
-import com.example.email.facade.EmailFacade;
 import com.example.email.repositories.EmailCCDao;
 import com.example.email.repositories.EmailDao;
 import com.example.email.repositories.EmailToDao;
 import com.example.email.service.exceptions.InvalidEmailStateException;
 import com.example.email.service.exceptions.ResourceNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -129,6 +125,7 @@ class EmailServiceTest {
 
     @Test
     void testGetEmailByIdNotFound() {
+
         when(emailDao.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
@@ -138,23 +135,22 @@ class EmailServiceTest {
         verify(emailDao).findById(999L);
     }
 
-    /*@Test
+    @Test
     void testDeleteEmailSuccessful() {
-        Email email = Email.builder().emailId(1L).build();
-        when(emailDao.findById(1L)).thenReturn(Optional.of(email));
 
         emailService.deleteEmail(1L);
 
+        verify(emailDao).deleteById(1L);
     }
 
     @Test
     void testDeleteEmailNotFound() {
 
-        when(emailDao.findById(999L)).thenReturn(Optional.empty());
-
         emailService.deleteEmail(999L);
 
-    }*/
+        verify(emailDao).deleteById(999L);
+
+    }
 
     @Test
     void testGetAllEmails() {
@@ -343,6 +339,33 @@ class EmailServiceTest {
 
         verify(emailDao).deleteAllById(emailIds);
     }
+
+    @Test
+    void testMarkEmailsAsSpam() {
+
+        List<Email> emails = Arrays.asList(
+                Email.builder()
+                        .emailId(1L)
+                        .emailFrom("carl@gbtec.com")
+                        .state(EmailStateEnum.DRAFT)
+                        .build(),
+                Email.builder()
+                        .emailId(2L)
+                        .emailFrom("carl@gbtec.com")
+                        .state(EmailStateEnum.SENT)
+                        .build()
+        );
+
+        when(emailDao.findByEmailFrom("carl@gbtec.com")).thenReturn(emails);
+
+        emailService.markEmailsAsSpam();
+
+        assertEquals(EmailStateEnum.SPAM, emails.get(0).getState());
+        assertEquals(EmailStateEnum.SPAM, emails.get(1).getState());
+        assertNotNull(emails.get(0).getUpdatedAt());
+        assertNotNull(emails.get(1).getUpdatedAt());
+    }
+
 }
 
 
