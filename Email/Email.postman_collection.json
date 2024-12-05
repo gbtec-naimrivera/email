@@ -1,0 +1,148 @@
+{
+	"info": {
+		"_postman_id": "e0aec6d0-2835-4cdb-bc3a-eed90705accb",
+		"name": "Email",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "39476016"
+	},
+	"item": [
+		{
+			"name": "Crear Email",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"emailFrom\": \"marcus@gbtec.com\",\r\n  \"emailBody\": \"This is the body of the email.\",\r\n  \"state\": 1,\r\n  \"emailTo\": [\r\n    {\r\n      \"email\": \"andrew@gbtec.com\"\r\n    },\r\n    {\r\n      \"email\": \"peter@gbtec.com\"\r\n    }\r\n  ],\r\n  \"emailCC\": [\r\n    {\r\n      \"email\": \"carl@example.com\"\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/email"
+			},
+			"response": []
+		},
+		{
+			"name": "Crear Emails",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"emailFrom\": \"marcus@example.com\",\r\n        \"emailBody\": \"This is the body of the email.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n            \"email\": \"andrew@gbtec.com\"\r\n            },\r\n            {\r\n            \"email\": \"peter@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n            \"email\": \"carl@example.com\"\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"emailFrom\": \"marcus@example.com\",\r\n        \"emailBody\": \"This is the body of the email.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n            \"email\": \"andrew@gbtec.com\"\r\n            },\r\n            {\r\n            \"email\": \"peter@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n            \"email\": \"carl@example.com\"\r\n            }\r\n        ]\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Email",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails/1"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Emails State",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8080/emails/state/1"
+			},
+			"response": []
+		},
+		{
+			"name": "Get ALL Emails",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8080/emails"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Email with Id",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8080/email/1"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete x emails",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails/1,2,3,4,5"
+			},
+			"response": []
+		},
+		{
+			"name": "Actualizar Email",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"emailFrom\": \"marcus@example.com\",\r\n  \"emailBody\": \"This is the body of the email updated.\",\r\n  \"state\": 2,\r\n  \"emailTo\": [\r\n    {\r\n      \"email\": \"andrew2@gbtec.com\"\r\n    },\r\n    {\r\n      \"email\": \"peter2@gbtec.com\"\r\n    }\r\n  ],\r\n  \"emailCC\": [\r\n    {\r\n      \"email\": \"carl2@example.com\"\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/email/3"
+			},
+			"response": []
+		},
+		{
+			"name": "Actualizar Emails",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"emailId\": 1,\r\n        \"emailFrom\": \"marcus2@example.com\",\r\n        \"emailBody\": \"This is the body of the email updated.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n                \"email\": \"andrew2@gbtec.com\"\r\n            },\r\n            {\r\n                \"email\": \"peter2@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n                \"email\": \"carl2@example.com\"\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"emailId\": 2,\r\n        \"emailFrom\": \"marcus2@example.com\",\r\n        \"emailBody\": \"This is the body of the email updated.\",\r\n        \"state\": 2,\r\n        \"emailTo\": [\r\n            {\r\n                \"email\": \"andrew2@gbtec.com\"\r\n            },\r\n            {\r\n                \"email\": \"peter2@gbtec.com\"\r\n            }\r\n        ],\r\n        \"emailCC\": [\r\n            {\r\n                \"email\": \"carl2@example.com\"\r\n            }\r\n        ]\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/emails"
+			},
+			"response": []
+		}
+	]
+}
