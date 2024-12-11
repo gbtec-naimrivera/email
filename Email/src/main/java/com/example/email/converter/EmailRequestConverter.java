@@ -5,6 +5,8 @@ import com.example.email.entity.EmailCC;
 import com.example.email.entity.EmailStateEnum;
 import com.example.email.entity.EmailTo;
 import com.example.email.dto.EmailRequestDTO;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,15 +15,16 @@ import java.util.stream.Collectors;
  * <p>Utility class for converting between {@link Email} entities and their corresponding DTOs.</p>
  * <p>This class contains methods to convert {@link EmailRequestDTO} to {@link Email} entities
  */
-public class EmailRequestConverter {
-
+@Component
+public class EmailRequestConverter implements Converter<EmailRequestDTO, Email> {
     /**
      * <p>Converts a {@link EmailRequestDTO} to an {@link Email} entity.</p>
      *
      * @param emailRequestDTO The {@link EmailRequestDTO} object to convert.
      * @return The corresponding {@link Email} entity.
      */
-    public static Email convertToEntity(EmailRequestDTO emailRequestDTO) {
+    @Override
+    public Email convert(EmailRequestDTO emailRequestDTO) {
         Email email = new Email();
         email.setEmailId(emailRequestDTO.getEmailId());
         email.setEmailFrom(emailRequestDTO.getEmailFrom());
@@ -41,4 +44,5 @@ public class EmailRequestConverter {
 
         return email;
     }
+
 }

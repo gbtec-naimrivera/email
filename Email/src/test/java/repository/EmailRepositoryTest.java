@@ -6,17 +6,14 @@ import com.example.email.entity.EmailCC;
 import com.example.email.entity.EmailStateEnum;
 import com.example.email.entity.EmailTo;
 import com.example.email.repositories.EmailDao;
-import com.example.email.service.EmailServiceImpl;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 
@@ -26,16 +23,20 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = EmailApplication.class)
+@DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(initializers = {PostgreSQLContainerInitializer.class})
+@ContextConfiguration(classes = EmailApplication.class)
 class EmailRepositoryTest {
 
     @Autowired
     EmailDao emailDao;
 
-    @Autowired
-    EmailServiceImpl emailService;
+    private static PostgreSQLContainer sqlContainer = new PostgreSQLContainer("postgres:10.7");
+
+    static {
+
+        sqlContainer.start();
+    }
 
     @BeforeEach
     void setUp(){

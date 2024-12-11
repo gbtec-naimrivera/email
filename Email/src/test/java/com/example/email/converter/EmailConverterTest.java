@@ -9,10 +9,9 @@ import com.example.email.entity.EmailStateEnum;
 import com.example.email.entity.EmailTo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import static com.example.email.converter.EmailRequestConverter.convertToEntity;
-import static com.example.email.converter.EmailResponseConverter.convertToResponseDTO;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +27,11 @@ public class EmailConverterTest {
     @Mock
     private EmailRequestDTO emailRequestDTO;
 
+    @InjectMocks
+    private EmailRequestConverter emailRequestConverter;
+
+    @InjectMocks
+    private EmailResponseConverter emailResponseConverter;
 
 
     @Test
@@ -40,7 +44,7 @@ public class EmailConverterTest {
         when(emailRequestDTO.getEmailTo()).thenReturn(Arrays.asList(new EmailAddressDTO("to1@gbtec.com"), new EmailAddressDTO("to2@gbtec.com")));
         when(emailRequestDTO.getEmailCC()).thenReturn(List.of(new EmailAddressDTO("cc1@gbtec.com")));
 
-        Email result = convertToEntity(emailRequestDTO);
+        Email result = emailRequestConverter.convert(emailRequestDTO);
 
         assertNotNull(result);
         assertEquals(1L, result.getEmailId());
@@ -75,7 +79,7 @@ public class EmailConverterTest {
         List<EmailCC> emailCCs = Arrays.asList(emailCC1, emailCC2);
         when(email.getEmailCC()).thenReturn(emailCCs);
 
-        EmailResponseDTO responseDTO = convertToResponseDTO(email);
+        EmailResponseDTO responseDTO = emailResponseConverter.convert(email);
 
         assertNotNull(responseDTO);
         assertEquals(1L, responseDTO.getEmailId().longValue());

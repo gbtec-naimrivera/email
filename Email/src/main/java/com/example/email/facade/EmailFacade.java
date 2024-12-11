@@ -14,9 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.example.email.converter.EmailRequestConverter.convertToEntity;
-import static com.example.email.converter.EmailResponseConverter.convertToResponseDTO;
-
 /**
  * <p>Facade for managing email-related operations.</p>
  * <p>This class handles the communication between the controller and the service layer for email management.</p>
@@ -28,6 +25,12 @@ public class EmailFacade {
     @Autowired
     private EmailServiceImpl emailService;
 
+    @Autowired
+    private EmailRequestConverter emailRequestConverter;
+
+    @Autowired
+    private EmailResponseConverter emailResponseConverter;
+
     /**
      * <p>Creates a new email.</p>
      *
@@ -36,11 +39,11 @@ public class EmailFacade {
      */
     public EmailResponseDTO createEmail(EmailRequestDTO emailRequestDTO) {
 
-        Email email = convertToEntity(emailRequestDTO);
+        Email email = emailRequestConverter.convert(emailRequestDTO);
 
         Email createdEmail = emailService.createEmail(email);
 
-        return convertToResponseDTO(createdEmail);
+        return emailResponseConverter.convert(createdEmail);
     }
 
     /**
@@ -51,13 +54,13 @@ public class EmailFacade {
      */
     public List<EmailResponseDTO> createEmails(List<EmailRequestDTO> emailsToCreate) {
         List<Email> emails = emailsToCreate.stream()
-                .map(EmailRequestConverter::convertToEntity)
+                .map(emailRequestConverter::convert)
                 .collect(Collectors.toList());
 
         List<Email> createdEmails = emailService.createEmails(emails);
 
         return createdEmails.stream()
-                .map(EmailResponseConverter::convertToResponseDTO)
+                .map(emailResponseConverter::convert)
                 .collect(Collectors.toList());
     }
 
@@ -70,7 +73,7 @@ public class EmailFacade {
         List<Email> emails = emailService.getAllEmails();
 
         return emails.stream()
-                .map(EmailResponseConverter::convertToResponseDTO)
+                .map(emailResponseConverter::convert)
                 .collect(Collectors.toList());
     }
 
@@ -82,7 +85,7 @@ public class EmailFacade {
      */
     public EmailResponseDTO getEmailById(Long emailId) {
         Email email = emailService.getEmailById(emailId);
-        return convertToResponseDTO(email);
+        return emailResponseConverter.convert(email);
     }
 
     /**
@@ -95,7 +98,7 @@ public class EmailFacade {
         List<Email> emails = emailService.getEmailsByState(EmailStateEnum.fromStateCode(state));
 
         return emails.stream()
-                .map(EmailResponseConverter::convertToResponseDTO)
+                .map(emailResponseConverter::convert)
                 .collect(Collectors.toList());
     }
 
@@ -107,7 +110,7 @@ public class EmailFacade {
      * @return EmailResponseDTO The updated email.
      */
     public EmailResponseDTO updateEmail(Long emailId, EmailRequestDTO emailRequestDTO) {
-        Email emailToUpdate = convertToEntity(emailRequestDTO);
+        Email emailToUpdate = emailRequestConverter.convert(emailRequestDTO);
 
         Email updatedEmail = emailService.updateEmail(
                 emailId,
@@ -118,7 +121,7 @@ public class EmailFacade {
                 emailToUpdate.getEmailCC()
         );
 
-        return convertToResponseDTO(updatedEmail);
+        return emailResponseConverter.convert(updatedEmail);
     }
 
     /**
@@ -129,13 +132,13 @@ public class EmailFacade {
      */
     public List<EmailResponseDTO> updateEmails(List<EmailRequestDTO> emailsToUpdate) {
         List<Email> emails = emailsToUpdate.stream()
-                .map(EmailRequestConverter::convertToEntity)
+                .map(emailRequestConverter::convert)
                 .collect(Collectors.toList());
 
         List<Email> updatedEmails = emailService.updateEmails(emails);
 
         return updatedEmails.stream()
-                .map(EmailResponseConverter::convertToResponseDTO)
+                .map(emailResponseConverter::convert)
                 .collect(Collectors.toList());
     }
 

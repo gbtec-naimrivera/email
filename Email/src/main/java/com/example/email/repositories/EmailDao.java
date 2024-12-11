@@ -3,6 +3,7 @@ package com.example.email.repositories;
 import com.example.email.entity.Email;
 import com.example.email.entity.EmailStateEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * <p>Repository interface for managing {@link Email} entities.</p>
  * <p>This interface extends {@link JpaRepository} to provide CRUD operations for the {@link Email} entity.</p>
  */
+@Repository
 public interface EmailDao extends JpaRepository<Email, Long> {
 
     /**
