@@ -3,6 +3,7 @@ package com.example.email.rest.controller;
 import com.example.email.facade.EmailFacade;
 import com.example.email.dto.EmailRequestDTO;
 import com.example.email.dto.EmailResponseDTO;
+import com.example.email.rabbitmq.RabbitMQProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,11 @@ public class EmailController {
     @Autowired
     private EmailFacade emailFacade;
 
+    private RabbitMQProducer producer;
+    public EmailController(RabbitMQProducer producer){
+        this.producer= producer;
+    }
+
     /**
      * <p>Creates a single email.</p>
      *
@@ -29,6 +35,7 @@ public class EmailController {
     public ResponseEntity<EmailResponseDTO> createEmail(@RequestBody EmailRequestDTO emailRequestDTO) {
         try {
             EmailResponseDTO createdEmail = emailFacade.createEmail(emailRequestDTO);
+            producer.sendMessage(String.valueOf(createdEmail.getEmailId()));
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEmail);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);

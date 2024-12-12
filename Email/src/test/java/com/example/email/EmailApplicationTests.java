@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootTest
-class EmailApplicationTests {
+public class EmailApplicationTests {
 
 	@Test
 	void contextLoads() {
