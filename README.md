@@ -31,13 +31,13 @@ In this integration, a GitHub API token is needed for authentication. To create 
 In order to create the repository once we got the token, **we only need to fill the form** with the information needed in Process Execution.
 
 <p align="center">
-  <img src="Resources/git_form.png" alt="Descripción de la imagen" width="300">
+  <img src="Resources/git_form.PNG" alt="Descripción de la imagen">
 </p>
 
 When the repository is created, **Process Execution might display basic information** about the repository.
 
 <p align="center">
-  <img src="Resources/customer_search.png" alt="Descripción de la imagen" width="300">
+  <img src="Resources/git_info.PNG" alt="Descripción de la imagen">
 </p>
 
 Once this action is completed, **if the repository is not created correctly, the form can be filled again until the repository is created**. 
@@ -61,6 +61,6 @@ This a close look to the diagram
 This is the diagram
 
 <p align="center">
-  <img src="Resources/customer_search.png" alt="Descripción de la imagen" width="300">
+  <img src="Resources/git_diagram.PNG" alt="Descripción de la imagen">
 </p>
 
